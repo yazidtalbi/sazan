@@ -56,8 +56,8 @@ export default function PerspectiveCollage() {
       dirY: -300,
       speed: 0.95,      // Mid-background layer pace
       scale: 0.08,
-      src: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&w=800&q=85',
-      alt: 'Yacht Sunset'
+      src: '/intro/01.png',
+      alt: 'Rocky Mediterranean coast at sunset'
     },
     {
       className: 'card-mid-left',
@@ -65,8 +65,8 @@ export default function PerspectiveCollage() {
       dirY: 140,
       speed: 1.85,      // Mid-foreground fast lateral explosion
       scale: 0.22,
-      src: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=900&q=85',
-      alt: 'Portrait'
+      src: '/intro/03.png',
+      alt: 'Mediterranean sea framed by stone architecture'
     },
     {
       className: 'card-mid-right',
@@ -74,8 +74,8 @@ export default function PerspectiveCollage() {
       dirY: -160,
       speed: 0.55,      // Deep background slow drift
       scale: 0.04,
-      src: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=85',
-      alt: 'Swimming'
+      src: '/intro/02.png',
+      alt: 'Sunlit Mediterranean shoreline'
     },
     {
       className: 'card-bottom-right',
@@ -83,8 +83,8 @@ export default function PerspectiveCollage() {
       dirY: 340,
       speed: 2.45,      // Close foreground rapid explosion & zoom
       scale: 0.35,
-      src: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=800&q=85',
-      alt: 'Oysters & Cocktail'
+      src: '/intro/04.png',
+      alt: 'Mediterranean table overlooking the sea'
     },
   ];
 

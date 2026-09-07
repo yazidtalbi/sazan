@@ -19,26 +19,26 @@ export default function DestinationMap() {
         <div className="container text-center">
           <div className="rediscover-editorial-wrapper">
             <div className="enhanced-editorial-container">
-              <div className="enhanced-top-row" style={{ left: '12%', position: 'relative' }}>
-                <h2 className="enhanced-line-main">An</h2>
-              </div>
-              <div className="enhanced-line-with-icon">
-                <h2 className="enhanced-line-main" style={{ left: '20%', position: 'relative' }}>enhanced</h2>
-                <div className="enhanced-olive-icon" style={{ position: 'relative', left: '20%' }}>
-                  <img
-                    alt="Mediterranean Olive Branch Engraving"
-                    className="olive-engraving-img-inline"
-                    src="/olive-branch-transparent.png"
-                  />
+              <div className="enhanced-headline-stack">
+                <h2 className="enhanced-line-main enhanced-line-an">An</h2>
+                <div className="enhanced-line-with-icon">
+                  <h2 className="enhanced-line-main">enhanced</h2>
+                  <div className="enhanced-olive-icon">
+                    <img
+                      alt="Mediterranean Olive Branch Engraving"
+                      className="olive-engraving-img-inline"
+                      src="/olive-branch-transparent.png"
+                    />
+                  </div>
+                </div>
+                <h2 className="enhanced-line-italic enhanced-line-mediterranean">Mediterranean</h2>
+                <div className="enhanced-experience-line">
+                  <h2 className="enhanced-line-main">experience</h2>
                 </div>
               </div>
-              <h2 className="enhanced-line-italic" style={{ left: '12%', position: 'relative' }}>Mediterranean</h2>
-              <div className="enhanced-experience-line">
-                <h2 className="enhanced-line-main">experience</h2>
-                <p className="enhanced-top-right-desc">
-                  Perfectly positioned between the Adriatic and Ionian Seas, Sazan Coast offers effortless access to Europe while remaining beautifully protected by nature. Close to everything. Unlike anywhere else.
-                </p>
-              </div>
+              <p className="enhanced-top-right-desc">
+                Perfectly positioned between the Adriatic and Ionian Seas, Sazan Coast offers effortless access to Europe while remaining beautifully protected by nature. Close to everything. Unlike anywhere else.
+              </p>
             </div>
           </div>
         </div>
@@ -51,16 +51,7 @@ export default function DestinationMap() {
         <div className="map-widget">
           <div className="map-graphic-wrapper">
             <div className="map-bg">
-              <img src="/masterp.png" alt="Sazan Coast destination map" className="map-bg-img" />
-              <div className="map-svg-overlay">
-                <svg viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" className="map-lines-svg">
-                  <path d="M500 300 Q450 250 380 200" stroke="rgba(217, 119, 6, 0.4)" strokeDasharray="6,6" strokeWidth="2" fill="none" />
-                  <path d="M500 300 Q420 320 320 360" stroke="rgba(217, 119, 6, 0.4)" strokeDasharray="6,6" strokeWidth="2" fill="none" />
-                  <path d="M500 300 Q580 220 680 180" stroke="rgba(217, 119, 6, 0.4)" strokeDasharray="6,6" strokeWidth="2" fill="none" />
-                  <path d="M500 300 Q560 380 620 440" stroke="rgba(217, 119, 6, 0.4)" strokeDasharray="6,6" strokeWidth="2" fill="none" />
-                </svg>
-              </div>
-
+              <img src="/masterp.png?v=2" alt="Sazan Coast destination map" className="map-bg-img" />
               <div className="map-pin pin-sazan active" style={{ left: '50%', top: '50%' }}>
                 <div className="pin-pulse"></div>
                 <div className="pin-dot"></div>
