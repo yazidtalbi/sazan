@@ -7,7 +7,7 @@ const CONNECTIONS = [
     id: 'place',
     label: 'To place',
     tagline: 'UNTAMED MEDITERRANEAN TOPOGRAPHY',
-    desc: 'Sazan Island is shaped by limestone cliffs, pristine Ionian waters, and wild coastal coves. Living here is a daily dialogue with natural grandeur.',
+    desc: 'Sazan Coast is shaped by limestone cliffs, pristine Ionian waters, and wild coastal coves. Living here is a daily dialogue with natural grandeur.',
     image: 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=1200&q=85',
     alt: 'Coastal Topography & Sea Cove'
   },

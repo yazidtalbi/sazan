@@ -28,7 +28,7 @@ export default function ExperiencesPage() {
           <div className="experiences-hero-bg-wrapper">
             <ParallaxImage
               src="https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=2400&q=90"
-              alt="Sazan Island Nature Cove"
+              alt="Sazan Coast Nature Cove"
               speed={0.3}
             />
             <div className="hero-overlay"></div>

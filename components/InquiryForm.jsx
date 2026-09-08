@@ -26,7 +26,7 @@ export default function InquiryForm() {
             <div className="inquiries-media">
               <ParallaxImage
                 src="/inquiry.png"
-                alt="Sazan Island Sanctuary"
+                alt="Sazan Coast Sanctuary"
                 speed={0.35}
               />
             </div>

@@ -41,7 +41,7 @@ const helveticaNeue = localFont({
 });
 
 export const metadata = {
-  title: 'SAZAN ISLAND • Private Mediterranean Sanctuary',
+  title: 'SAZAN COAST • Private Mediterranean Sanctuary',
   description: 'An exclusive private island in the Mediterranean where nature, architecture, and luxury life exist in perfect harmony.',
   icons: {
     icon: [
