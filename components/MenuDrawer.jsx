@@ -33,7 +33,7 @@ const groups = {
   },
 };
 
-export default function MenuDrawer({ isOpen, onClose }) {
+export default function MenuDrawer({ isOpen, onClose, standalone = false }) {
   const [openGroup, setOpenGroup] = useState(null);
 
   useEffect(() => {
@@ -76,9 +76,14 @@ export default function MenuDrawer({ isOpen, onClose }) {
             ) : (
               <Link
                 key={item.title}
-                href={item.href}
+                href={standalone ? (item.href?.startsWith('/masterplan') ? item.href : '#') : item.href}
                 className={`menu-subitem ${item.featured ? 'is-featured' : ''}`}
-                onClick={onClose}
+                onClick={(e) => {
+                  onClose();
+                  if (standalone && !item.href?.startsWith('/masterplan')) {
+                    e.preventDefault();
+                  }
+                }}
               >
                 {item.title}
               </Link>

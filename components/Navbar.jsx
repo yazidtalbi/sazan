@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-export default function Navbar({ onOpenMenu, hidden = false }) {
+export default function Navbar({ onOpenMenu, hidden = false, standalone = false }) {
   const [scrolled, setScrolled] = useState(false);
   const [light, setLight] = useState(false);
 
@@ -65,9 +65,15 @@ export default function Navbar({ onOpenMenu, hidden = false }) {
           </button>
         </div>
 
-        <Link href="/" className="brand-logo">
-          <img src="/svg/sazan.svg" alt="SAZAN" className="sazan-navbar-logo" />
-        </Link>
+        {standalone ? (
+          <a href="#main-content" className="brand-logo" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+            <img src="/svg/sazan.svg" alt="SAZAN" className="sazan-navbar-logo" />
+          </a>
+        ) : (
+          <Link href="/" className="brand-logo">
+            <img src="/svg/sazan.svg" alt="SAZAN" className="sazan-navbar-logo" />
+          </Link>
+        )}
 
         <div className="nav-right">
           <button className="nav-link lang-select">

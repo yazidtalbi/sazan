@@ -13,9 +13,9 @@ import MasterplanLocations from '@/components/MasterplanLocations';
 export default function MasterplanPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [navbarVisible, setNavbarVisible] = useState(false);
-  const [stage, setStage] = useState('title'); // 'title' -> 'fading' -> 'video'
-  const [markersVisible, setMarkersVisible] = useState(false);
-  const [mapReady, setMapReady] = useState(false);
+  const [stage, setStage] = useState('video');
+  const [markersVisible, setMarkersVisible] = useState(true);
+  const [mapReady, setMapReady] = useState(true);
   const [mapDragging, setMapDragging] = useState(false);
   const [mapGliding, setMapGliding] = useState(false);
   const [mapPan, setMapPan] = useState({ x: 0, y: 0 });
@@ -28,24 +28,10 @@ export default function MasterplanPage() {
   const heroRef = useRef(null);
 
   useEffect(() => {
-    // 1. Show centered title first
-    const fadeTimer = setTimeout(() => {
-      setStage('fading');
-    }, 1400);
-
-    // 2. Fade title out and smoothly reveal full viewport video in its place, starting video from 0s
-    const videoTimer = setTimeout(() => {
-      setStage('video');
-      if (videoRef.current) {
-        videoRef.current.currentTime = 0;
-        videoRef.current.play().catch(() => { });
-      }
-    }, 2200);
-
-    return () => {
-      clearTimeout(fadeTimer);
-      clearTimeout(videoTimer);
-    };
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(() => { });
+    }
   }, []);
 
   useEffect(() => () => {
@@ -179,22 +165,15 @@ export default function MasterplanPage() {
 
   return (
     <SmoothScroll>
-      <Navbar hidden={!navbarVisible} onOpenMenu={() => setMenuOpen(true)} />
-      <MenuDrawer isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+      <Navbar standalone hidden={!navbarVisible} onOpenMenu={() => setMenuOpen(true)} />
+      <MenuDrawer standalone isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <main id="main-content" className="masterplan-page">
 
         {/* FULL VIEWPORT HERO STAGE (100VW x 100VH) */}
         <section ref={heroRef} className="masterplan-hero-stage">
 
-          {/* Centered Title Layer (Centered Vertical & Horizontal) */}
-          <div className={`masterplan-centered-title-layer ${stage === 'fading' || stage === 'video' ? 'fade-out' : 'fade-in'}`}>
-            <h1 className="masterplan-centered-title">
-              The <em>Masterplan</em>
-            </h1>
-          </div>
-
-          {/* Full Viewport Video Layer (Fades into place) */}
+          {/* Full Viewport Video Layer */}
           <div
             className={`masterplan-video-layer ${stage === 'video' ? 'active' : ''} ${mapReady ? 'is-interactive' : ''}`}
             onPointerDown={handleMapPointerDown}
@@ -364,7 +343,7 @@ export default function MasterplanPage() {
 
       </main>
 
-      <Footer />
+      <Footer standalone />
     </SmoothScroll>
   );
 }

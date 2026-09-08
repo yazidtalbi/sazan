@@ -14,6 +14,10 @@ export function proxy(request) {
   const { pathname, search } = request.nextUrl;
   const authorized = request.cookies.get(COOKIE_NAME)?.value === accessToken();
 
+  if (pathname.startsWith('/masterplan')) {
+    return NextResponse.next();
+  }
+
   if (pathname === '/access') {
     return authorized
       ? NextResponse.redirect(new URL('/', request.url))

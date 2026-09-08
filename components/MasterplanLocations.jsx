@@ -3,38 +3,46 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+const DEFAULT_LOGOS = [
+  '/logos/Atlantis-The-Royal-Logo 1-white.png',
+  '/logos/aliee-logo-white.svg',
+  '/logos/Raffles_Hotels_&_Resorts_logo.svg-white.png',
+  '/logos/LOGO-CHEVAL-BLANC-white.png',
+  null,
+];
+
 const locations = [
   {
-    name: 'Pine & Lagoon Villas',
-    type: 'Private Living',
+    name: 'Atlantis The Royal',
+    type: 'Hospitality & Luxury Living',
     position: { left: '71.47%', top: '26.20%' },
-    image: '/island/pine-lagoon.jpg',
-    description: 'A collection of private villas shaped by pine woodland, calm water, and generous outdoor living.',
-    facts: ['Low-density villas', 'Lagoon setting', 'Private gardens'],
+    image: '/masterplan/places/atlantis.png',
+    description: 'An iconic resort experience alive with exceptional dining, entertainment, and aquatic discovery.',
+    facts: ['Ultra-luxury resort', 'Private beach & pools', 'World-class dining'],
   },
   {
-    name: 'Waterpark Hotel',
-    type: 'Hospitality & Leisure',
+    name: 'Aliée',
+    type: 'Boutique Living & Resort',
     position: { left: '82.10%', top: '21.36%' },
-    image: '/island/waterpark.png',
-    description: 'A lively resort destination bringing family hospitality, water experiences, and coastal recreation together.',
-    facts: ['Resort hospitality', 'Family recreation', 'Water experiences'],
+    image: '/masterplan/places/aliee.png',
+    description: 'A design-led escape where culture, creativity, and contemporary Mediterranean energy converge.',
+    facts: ['Boutique hospitality', 'Lagoon setting', 'Private wellness'],
   },
   {
-    name: 'North Residences',
-    type: 'Elevated Living',
+    name: 'Raffles',
+    type: 'Ultra-Luxury Hospitality',
     position: { left: '45.00%', top: '51.08%' },
-    image: '/island/north-residences.png',
-    description: 'Private residences set within the northern landscape, with open views and a quiet relationship to nature.',
-    facts: ['Panoramic outlook', 'Landscape-led design', 'Private amenities'],
+    image: '/masterplan/places/raffles.png',
+    description: 'A refined coastal retreat where timeless elegance meets Raffles’ legendary, intuitive service.',
+    facts: ['Legendary service', 'Landscape-led design', 'Private amenities'],
   },
   {
-    name: 'Sazan Boat Club',
-    type: 'Marina & Social',
+    name: 'Cheval Blanc',
+    type: 'Maison & Resort',
     position: { left: '23.80%', top: '56.08%' },
-    image: '/island/sazan-boat.png',
-    description: 'A relaxed waterside meeting place for boating, dining, and life around the island’s marina.',
-    facts: ['Boat services', 'Waterfront dining', 'Members’ spaces'],
+    image: '/masterplan/places/cheval-blanc.png',
+    description: 'An intimate coastal maison defined by rare privacy, exceptional artistry, and deeply personal service.',
+    facts: ['Exclusive maison', 'Waterfront dining', 'Members’ spaces'],
   },
   {
     name: 'South Beach & Hill Estate',
@@ -46,7 +54,7 @@ const locations = [
   },
 ];
 
-export default function MasterplanLocations({ visible = false, onSelectionChange, logos, editorKey, showTools = false }) {
+export default function MasterplanLocations({ visible = false, onSelectionChange, logos = DEFAULT_LOGOS, editorKey, showTools = false }) {
   const [selected, setSelected] = useState(null);
   const [mounted, setMounted] = useState(false);
   const [editing, setEditing] = useState(false);
