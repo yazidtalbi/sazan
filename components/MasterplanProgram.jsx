@@ -33,7 +33,7 @@ const items = [
   },
 ];
 
-export default function MasterplanProgram() {
+export default function MasterplanProgram({ showHeading = true }) {
   const [openIndex, setOpenIndex] = useState(null);
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const previewRef = useRef(null);
@@ -54,10 +54,12 @@ export default function MasterplanProgram() {
   return (
     <section className="masterplan-program" onPointerMove={movePreview} onPointerLeave={() => setHoveredIndex(null)}>
       <div className="container">
-        <div className="masterplan-program-heading">
-          <span className="eia-eyebrow">The Program</span>
-          <p>Four principles shape a masterplan led by landscape, movement, and long-term value.</p>
-        </div>
+        {showHeading && (
+          <div className="masterplan-program-heading">
+            <span className="eia-eyebrow">The Program</span>
+            <p>Four principles shape a masterplan led by landscape, movement, and long-term value.</p>
+          </div>
+        )}
         <div className="masterplan-program-list">
           {items.map((item, index) => {
             const open = openIndex === index;

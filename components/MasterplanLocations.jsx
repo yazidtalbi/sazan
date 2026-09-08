@@ -46,7 +46,7 @@ const locations = [
   },
 ];
 
-export default function MasterplanLocations({ visible = false, onSelectionChange, logos, editorKey }) {
+export default function MasterplanLocations({ visible = false, onSelectionChange, logos, editorKey, showTools = false }) {
   const [selected, setSelected] = useState(null);
   const [mounted, setMounted] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -122,7 +122,7 @@ export default function MasterplanLocations({ visible = false, onSelectionChange
 
   return (
     <>
-      {toolbarHost && visible && createPortal(
+      {showTools && toolbarHost && visible && createPortal(
         <div className="masterplan-placement-tools" onPointerDown={(event) => event.stopPropagation()}>
           <button type="button" aria-pressed={editing} onClick={() => {
             if (!editing) closeDrawer();

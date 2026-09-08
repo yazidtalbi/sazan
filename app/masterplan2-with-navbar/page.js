@@ -10,9 +10,8 @@ import ParallaxImage from '@/components/ParallaxImage';
 import MasterplanProgram from '@/components/MasterplanProgram';
 import MasterplanLocations from '@/components/MasterplanLocations';
 
-export default function MasterplanPage() {
+export default function MasterplanWithNavbarPage() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [navbarVisible, setNavbarVisible] = useState(false);
   const [stage, setStage] = useState('title'); // 'title' -> 'fading' -> 'video'
   const [markersVisible, setMarkersVisible] = useState(false);
   const [mapReady, setMapReady] = useState(false);
@@ -51,26 +50,6 @@ export default function MasterplanPage() {
   useEffect(() => () => {
     if (inertiaFrameRef.current) window.cancelAnimationFrame(inertiaFrameRef.current);
     if (zoomTimerRef.current) window.clearTimeout(zoomTimerRef.current);
-  }, []);
-
-  useEffect(() => {
-    let frame = 0;
-    const updateNavbar = () => {
-      frame = 0;
-      const heroHeight = heroRef.current?.offsetHeight || window.innerHeight;
-      setNavbarVisible(window.scrollY >= heroHeight - 2);
-    };
-    const scheduleUpdate = () => {
-      if (!frame) frame = window.requestAnimationFrame(updateNavbar);
-    };
-    updateNavbar();
-    window.addEventListener('scroll', scheduleUpdate, { passive: true });
-    window.addEventListener('resize', scheduleUpdate);
-    return () => {
-      window.removeEventListener('scroll', scheduleUpdate);
-      window.removeEventListener('resize', scheduleUpdate);
-      window.cancelAnimationFrame(frame);
-    };
   }, []);
 
   const setBoundedPan = (x, y, focused = Boolean(focusPosition)) => {
@@ -179,7 +158,7 @@ export default function MasterplanPage() {
 
   return (
     <SmoothScroll>
-      <Navbar hidden={!navbarVisible} onOpenMenu={() => setMenuOpen(true)} />
+      <Navbar onOpenMenu={() => setMenuOpen(true)} />
       <MenuDrawer isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <main id="main-content" className="masterplan-page">
