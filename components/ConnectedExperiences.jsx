@@ -8,7 +8,7 @@ const CONNECTIONS = [
     label: 'To place',
     tagline: 'UNTAMED MEDITERRANEAN TOPOGRAPHY',
     desc: 'Sazan Island is shaped by limestone cliffs, pristine Ionian waters, and wild coastal coves. Living here is a daily dialogue with natural grandeur.',
-    image: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&w=1200&q=85',
+    image: 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=1200&q=85',
     alt: 'Coastal Topography & Sea Cove'
   },
   {
@@ -32,7 +32,7 @@ const CONNECTIONS = [
     label: 'To nature',
     tagline: 'PRISTINE REEFS & HIDDEN ECOSYSTEMS',
     desc: '100% clean energy arrays, protected marine reserves, and tidal circulation engineering preserve the island’s thriving underwater wildlife.',
-    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1200&q=85',
+    image: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"><rect width="100%" height="100%" fill="%23e2e2e2"/></svg>',
     alt: 'Marine Life & Coral Reefs'
   },
   {
@@ -40,7 +40,7 @@ const CONNECTIONS = [
     label: 'To yourself',
     tagline: 'RESTORATIVE SOLITUDE & DEEP PEACE',
     desc: 'A place to slow down, disconnect from noise, and reconnect with your inner rhythm through private spa sanctuaries and cliffside meditation.',
-    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=85',
+    image: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"><rect width="100%" height="100%" fill="%23e2e2e2"/></svg>',
     alt: 'Restorative Spa & Solitude'
   }
 ];

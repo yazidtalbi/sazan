@@ -27,8 +27,8 @@ export default function ExperiencesPage() {
         <section id="experiences-hero" className="experiences-hero-section-130">
           <div className="experiences-hero-bg-wrapper">
             <ParallaxImage
-              src="https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&w=2400&q=90"
-              alt="Sazan Island Experiences Yacht"
+              src="https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=2400&q=90"
+              alt="Sazan Island Nature Cove"
               speed={0.3}
             />
             <div className="hero-overlay"></div>
@@ -83,8 +83,8 @@ export default function ExperiencesPage() {
             {/* LEFT IMAGE TOUCHING VIEWPORT LEFT EDGE */}
             <div className="living-edge-img living-left-img">
               <ParallaxImage
-                src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=800&q=85"
-                alt="Sazan Coast Dining & Sea"
+                src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='1000'><rect width='100%' height='100%' fill='%23e2e2e2'/></svg>"
+                alt="Sazan Coast Grey Background"
                 speed={0.2}
               />
             </div>
@@ -108,8 +108,8 @@ export default function ExperiencesPage() {
             {/* RIGHT IMAGE TOUCHING VIEWPORT RIGHT EDGE */}
             <div className="living-edge-img living-right-img">
               <ParallaxImage
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=85"
-                alt="Sazan Coast Yacht Sailing"
+                src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='1000'><rect width='100%' height='100%' fill='%23e2e2e2'/></svg>"
+                alt="Sazan Coast Grey Background"
                 speed={0.2}
               />
             </div>
@@ -176,8 +176,8 @@ export default function ExperiencesPage() {
             {/* Tile 4: Photo Bottom-Right */}
             <div className="square-grid-tile media-tile">
               <ParallaxImage
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1200&q=85"
-                alt="Resort Life"
+                src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='900'><rect width='100%' height='100%' fill='%23e2e2e2'/></svg>"
+                alt="Grey Background"
                 speed={0.2}
               />
             </div>

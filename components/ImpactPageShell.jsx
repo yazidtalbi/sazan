@@ -5,13 +5,11 @@ import Navbar from './Navbar';
 import MenuDrawer from './MenuDrawer';
 import InquiryForm from './InquiryForm';
 import Footer from './Footer';
-import SmoothScroll from './SmoothScroll';
 import ImpactNav from './ImpactNav';
 
 export default function ImpactPageShell({ children }) {
   const [menuOpen, setMenuOpen] = useState(false);
   return (
-    <SmoothScroll>
     <div className="impact-page">
       <Navbar onOpenMenu={() => setMenuOpen(true)} />
       <MenuDrawer isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -22,6 +20,5 @@ export default function ImpactPageShell({ children }) {
       </div>
       <Footer />
     </div>
-    </SmoothScroll>
   );
 }

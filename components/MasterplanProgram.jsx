@@ -12,7 +12,7 @@ const items = [
   },
   {
     title: 'Stewardship',
-    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=900&q=85',
+    image: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600"><rect width="100%" height="100%" fill="%23e2e2e2"/></svg>',
     intro: 'Long-term care for the landscape is embedded in every planning decision.',
     detail: 'Placeholder — habitat protection, restoration programs, and ongoing monitoring place environmental responsibility at the center of the masterplan.',
     meta: ['Habitat protection', 'Native restoration', 'Long-term monitoring'],

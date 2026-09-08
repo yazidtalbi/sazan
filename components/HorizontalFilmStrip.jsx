@@ -30,13 +30,13 @@ export default function HorizontalFilmStrip() {
   }, []);
 
   const filmFrames = [
-    { src: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&w=1000&q=85', title: 'SAZAN COAST • FRAME 18' },
+    { src: 'https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=1000&q=85', title: 'SAZAN COAST • FRAME 18' },
     { src: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=85', title: 'SAZAN COAST • FRAME 19' },
     { src: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=1000&q=85', title: 'SAZAN COAST • FRAME 20' },
     { src: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1000&q=85', title: 'SAZAN COAST • FRAME 21' },
-    { src: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1000&q=85', title: 'SAZAN COAST • FRAME 22' },
-    { src: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1000&q=85', title: 'SAZAN COAST • FRAME 23' },
-    { src: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1000&q=85', title: 'SAZAN COAST • FRAME 24' },
+    { src: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="750"><rect width="100%" height="100%" fill="%23e2e2e2"/></svg>', title: 'SAZAN COAST • FRAME 22' },
+    { src: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="750"><rect width="100%" height="100%" fill="%23e2e2e2"/></svg>', title: 'SAZAN COAST • FRAME 23' },
+    { src: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="750"><rect width="100%" height="100%" fill="%23e2e2e2"/></svg>', title: 'SAZAN COAST • FRAME 24' },
   ];
 
   return (

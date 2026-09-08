@@ -29,7 +29,7 @@ export default function EiaInquirySection({ parallax = false }) {
             {/* LEFT IMAGE */}
             <div className="eia-inquiry-media">
               {parallax ? <ParallaxImage src="/inquiry.png" alt="Sazan Coast anchorage photography placeholder" speed={0.25} /> : <img
-                src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1000&q=85"
+                src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='1000' height='750'><rect width='100%' height='100%' fill='%23e2e2e2'/></svg>"
                 alt="Sazan Coast Yacht Anchorage"
                 className="eia-inquiry-img"
               />}
