@@ -34,13 +34,6 @@ export default function PerspectiveCollage() {
           card.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) scale(${scale})`;
         });
 
-        // Smooth fade out as section crosses vertical center of screen
-        const fadeDistance = rect.height * 0.45;
-        let opacity = 1;
-        if (stageCenter < viewportCenter) {
-          opacity = Math.max(0, Math.min(1, 1 - (viewportCenter - stageCenter) / fadeDistance));
-        }
-        stageRef.current.style.opacity = opacity;
       }
     };
 
@@ -52,36 +45,36 @@ export default function PerspectiveCollage() {
   const cardsData = [
     {
       className: 'card-top-left',
-      dirX: -260,
-      dirY: -300,
-      speed: 0.95,      // Mid-background layer pace
+      dirX: -110,
+      dirY: -180,
+      speed: 0.7,
       scale: 0.08,
       src: '/intro/01.png',
       alt: 'Rocky Mediterranean coast at sunset'
     },
     {
       className: 'card-mid-left',
-      dirX: -540,
-      dirY: 140,
-      speed: 1.85,      // Mid-foreground fast lateral explosion
+      dirX: -130,
+      dirY: 130,
+      speed: 0.85,
       scale: 0.22,
       src: '/intro/03.png',
       alt: 'Mediterranean sea framed by stone architecture'
     },
     {
       className: 'card-mid-right',
-      dirX: 200,
-      dirY: -160,
-      speed: 0.55,      // Deep background slow drift
+      dirX: 105,
+      dirY: -145,
+      speed: 0.65,
       scale: 0.04,
-      src: '/intro/02.png',
-      alt: 'Sunlit Mediterranean shoreline'
+      src: '/intro/people.png',
+      alt: 'People in Mediterranean luxury sanctuary'
     },
     {
       className: 'card-bottom-right',
-      dirX: 620,
-      dirY: 340,
-      speed: 2.45,      // Close foreground rapid explosion & zoom
+      dirX: 135,
+      dirY: 165,
+      speed: 0.9,
       scale: 0.35,
       src: '/intro/04.png',
       alt: 'Mediterranean table overlooking the sea'

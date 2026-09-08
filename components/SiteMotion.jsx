@@ -16,15 +16,15 @@ export default function SiteMotion({ children }) {
 
     const groups = [
       {
-        selector: 'main section:not(:first-child) h2, main section:not(:first-child) h3',
+        selector: 'main section h1, main section h2, main section h3, main section h4, .hero-title, .section-title, .experiences-statement-title, .inquiries-title, .destination-title',
         className: 'site-reveal-heading',
       },
       {
-        selector: 'main section:not(:first-child) p',
+        selector: 'main section p, .hero-subtitle, .experiences-statement-desc, .inquiries-top-desc, .scroll-indicator',
         className: 'site-reveal-copy',
       },
       {
-        selector: 'main section:not(:first-child) img',
+        selector: 'main section img:not(.sazan-navbar-logo), .btn-sharp',
         className: 'site-reveal-media',
       },
     ];

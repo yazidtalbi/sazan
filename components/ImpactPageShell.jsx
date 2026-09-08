@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Navbar from './Navbar';
 import MenuDrawer from './MenuDrawer';
-import EiaInquirySection from './EiaInquirySection';
+import InquiryForm from './InquiryForm';
+import Footer from './Footer';
 import SmoothScroll from './SmoothScroll';
 import ImpactNav from './ImpactNav';
 
@@ -16,7 +17,10 @@ export default function ImpactPageShell({ children }) {
       <MenuDrawer isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
       <ImpactNav />
       <main>{children}</main>
-      <EiaInquirySection parallax />
+      <div className="home-inquiry-map">
+        <InquiryForm />
+      </div>
+      <Footer />
     </div>
     </SmoothScroll>
   );

@@ -190,20 +190,10 @@ export default function ExperiencesPage() {
         {/* 10. CONNECTED TO WHAT MATTERS MOST (Sticky Scroll Vertical Image Transition) */}
         <ConnectedExperiences />
 
-        {/* 11. MAP & NATURE DECISIONS SECTION */}
-        <section className="experiences-map-section">
-          <div className="container text-center">
-            <h2 className="experiences-map-title">
-              Every decision at Sazan Coast<br />begins with nature
-            </h2>
-          </div>
-          <div className="experiences-map-wrapper">
-            <img src="/svg/map1.svg" alt="Sazan Island Map" className="sazan-map-svg" />
-          </div>
-        </section>
-
         {/* 12. INQUIRIES & REGISTRATION (Last element before Footer) */}
-        <InquiryForm />
+        <div className="home-inquiry-map">
+          <InquiryForm />
+        </div>
 
       </main>
 

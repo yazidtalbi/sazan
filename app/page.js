@@ -85,7 +85,9 @@ export default function Home() {
         </section>
 
         {/* Inquiry Registration */}
-        <InquiryForm />
+        <div className="home-inquiry-map">
+          <InquiryForm />
+        </div>
       </main>
 
       <Footer />

@@ -11,6 +11,7 @@ import MasterplanLocations from '@/components/MasterplanLocations';
 
 export default function MasterplanPage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [navbarVisible, setNavbarVisible] = useState(false);
   const [stage, setStage] = useState('title'); // 'title' -> 'fading' -> 'video'
   const [markersVisible, setMarkersVisible] = useState(false);
   const [mapReady, setMapReady] = useState(false);
@@ -23,6 +24,7 @@ export default function MasterplanPage() {
   const mapPanRef = useRef({ x: 0, y: 0 });
   const inertiaFrameRef = useRef(null);
   const zoomTimerRef = useRef(null);
+  const heroRef = useRef(null);
 
   useEffect(() => {
     // 1. Show centered title first
@@ -48,6 +50,26 @@ export default function MasterplanPage() {
   useEffect(() => () => {
     if (inertiaFrameRef.current) window.cancelAnimationFrame(inertiaFrameRef.current);
     if (zoomTimerRef.current) window.clearTimeout(zoomTimerRef.current);
+  }, []);
+
+  useEffect(() => {
+    let frame = 0;
+    const updateNavbar = () => {
+      frame = 0;
+      const heroHeight = heroRef.current?.offsetHeight || window.innerHeight;
+      setNavbarVisible(window.scrollY >= heroHeight - 2);
+    };
+    const scheduleUpdate = () => {
+      if (!frame) frame = window.requestAnimationFrame(updateNavbar);
+    };
+    updateNavbar();
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate);
+    return () => {
+      window.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('resize', scheduleUpdate);
+      window.cancelAnimationFrame(frame);
+    };
   }, []);
 
   const setBoundedPan = (x, y, focused = Boolean(focusPosition)) => {
@@ -156,13 +178,13 @@ export default function MasterplanPage() {
 
   return (
     <SmoothScroll>
-      <Navbar onOpenMenu={() => setMenuOpen(true)} />
+      <Navbar hidden={!navbarVisible} onOpenMenu={() => setMenuOpen(true)} />
       <MenuDrawer isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <main id="main-content" className="masterplan-page">
 
         {/* FULL VIEWPORT HERO STAGE (100VW x 100VH) */}
-        <section className="masterplan-hero-stage">
+        <section ref={heroRef} className="masterplan-hero-stage">
 
           {/* Centered Title Layer (Centered Vertical & Horizontal) */}
           <div className={`masterplan-centered-title-layer ${stage === 'fading' || stage === 'video' ? 'fade-out' : 'fade-in'}`}>
@@ -229,13 +251,14 @@ export default function MasterplanPage() {
         </section>
 
         {/* SECTION 3: Big Statement Callout & 2-Column Description */}
-        <section className="masterplan-quote-section">
+        <section className="masterplan-quote-section masterplan-intro-section">
           <div className="container">
-            <h2 className="masterplan-big-quote">
+            <h2 className="masterplan-intro-title">The Masterplan</h2>
+            <h3 className="masterplan-big-quote">
               The masterplan encompasses approximately 4.5 kilometres of beachfront,
               creating one of the most significant mixed-use waterfront destinations
               in the Mediterranean.
-            </h2>
+            </h3>
 
             <div className="quote-cols-grid">
               <p>
@@ -307,17 +330,10 @@ export default function MasterplanPage() {
           </div>
         </section>
 
-        {/* SECTION 7: Topography Sketch Section */}
-        <section className="topography-sketch-section">
-          <div className="container">
-            <div className="topography-sketch-wrapper">
-              <img src="/svg/map1.svg" alt="Sazan Coast masterplan map" className="topography-svg" />
-            </div>
-          </div>
-        </section>
-
         {/* Inquiries Registration */}
-        <InquiryForm />
+        <div className="home-inquiry-map">
+          <InquiryForm />
+        </div>
 
       </main>
 

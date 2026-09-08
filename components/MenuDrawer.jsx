@@ -3,54 +3,109 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
-export default function MenuDrawer({ isOpen, onClose }) {
-  const [previewImg, setPreviewImg] = useState('https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1000&q=85');
+const groups = {
+  impact: {
+    title: 'Project Impact',
+    items: [
+      { title: 'Environmental Impact', href: '/eia', featured: true },
+      { title: 'EIA Overview', href: '/eia' },
+      { title: 'Environmental Stewardship', href: '/eia/environmental-stewardship' },
+      { title: 'Economic Impact', href: '/economic-impact', featured: true },
+      { title: 'Corporate Social Responsibility', href: '/corporate-social-responsibility', featured: true },
+      { title: 'Celebrating Existing Nature', soon: true, featured: true },
+    ],
+  },
+  governance: {
+    title: 'Governance & Engagement',
+    items: [
+      { title: 'Management & Monitoring', href: '/eia/management-monitoring' },
+      { title: 'Public Consultation', href: '/eia/public-consultation' },
+      { title: 'Stakeholder Feedback', href: '/eia/stakeholder-feedback' },
+    ],
+  },
+  partners: {
+    title: 'Partners',
+    items: [
+      { title: 'Project Partners', soon: true },
+      { title: 'Involved Architects', soon: true },
+      { title: 'Involved Specialists', soon: true },
+    ],
+  },
+};
 
-  const menuItems = [
-    { num: '01', title: 'The Sanctuary', href: '/', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=85' },
-    { num: '02', title: 'Masterplan', href: '/masterplan', image: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1000&q=85' },
-    { num: '03', title: 'Experiences', href: '/experiences', image: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&w=1000&q=85' },
-    { num: '04', title: 'Environmental & EIA', href: '/eia/management-monitoring', image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=85' },
-    { num: '05', title: 'Mediterranean Beauty', href: '/#beauty', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=85' },
-    { num: '06', title: 'Private Inquiries', href: '/#inquiries', image: 'https://images.unsplash.com/photo-1505228395891-9a51e7e86bf6?auto=format&fit=crop&w=1000&q=85' },
-    { num: '07', title: 'Economic Impact', href: '/economic-impact', image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1000&q=85' },
-    { num: '08', title: 'Social Responsibility', href: '/corporate-social-responsibility', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=85' },
-  ];
+export default function MenuDrawer({ isOpen, onClose }) {
+  const [openGroup, setOpenGroup] = useState(null);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     const closeOnEscape = (event) => event.key === 'Escape' && onClose();
     window.addEventListener('keydown', closeOnEscape);
-    return () => window.removeEventListener('keydown', closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', closeOnEscape);
+    };
   }, [isOpen, onClose]);
 
-  return (
-    <div className={`menu-drawer ${isOpen ? 'open' : ''}`}>
-      <div className="menu-drawer-bg"></div>
-      <div className="menu-drawer-container">
-        <button className="menu-simple-close" type="button" onClick={onClose} aria-label="Close menu">Close <span aria-hidden="true">×</span></button>
-        <div className="menu-drawer-body">
-          <div className="menu-links">
-            {menuItems.map((item, idx) => (
+  const renderGroup = (id) => {
+    const group = groups[id];
+    const expanded = openGroup === id;
+    return (
+      <div className={`menu-accordion ${expanded ? 'is-open' : ''}`} key={id}>
+        <button
+          type="button"
+          className="menu-accordion-trigger"
+          aria-expanded={expanded}
+          aria-controls={`menu-group-${id}`}
+          onClick={() => setOpenGroup(expanded ? null : id)}
+        >
+          <span>{group.title}</span>
+          <i aria-hidden="true">{expanded ? '▴' : '▾'}</i>
+        </button>
+        <div className="menu-accordion-panel" id={`menu-group-${id}`}>
+          <div>
+            {group.items.map((item) => item.soon ? (
+              <span
+                key={item.title}
+                className={`menu-subitem is-soon ${item.featured ? 'is-featured' : ''}`}
+                aria-disabled="true"
+              >
+                {item.title} <small>Soon</small>
+              </span>
+            ) : (
               <Link
-                key={idx}
+                key={item.title}
                 href={item.href}
-                className="menu-item"
-                onMouseEnter={() => setPreviewImg(item.image)}
+                className={`menu-subitem ${item.featured ? 'is-featured' : ''}`}
                 onClick={onClose}
               >
-                <span className="title">{item.title}</span>
+                {item.title}
               </Link>
             ))}
           </div>
-
-          <div className="menu-preview">
-            <div className="preview-img-wrapper">
-              <img src={previewImg} alt="Preview" />
-            </div>
-          </div>
         </div>
       </div>
+    );
+  };
+
+  return (
+    <div className={`menu-drawer ${isOpen ? 'open' : ''}`} aria-hidden={!isOpen}>
+      <button className="menu-drawer-bg" type="button" onClick={onClose} aria-label="Close menu" />
+      <aside className="menu-drawer-container" aria-label="Main menu">
+        <button className="menu-simple-close" type="button" onClick={onClose} aria-label="Close menu">
+          <span aria-hidden="true">×</span> Close
+        </button>
+
+        <nav className="menu-links">
+          <span className="menu-item is-soon" aria-disabled="true">About Project <small>Soon</small></span>
+          {renderGroup('impact')}
+          {renderGroup('governance')}
+          {renderGroup('partners')}
+          <Link href="/masterplan2" className="menu-item" onClick={onClose}>Masterplan <span className="menu-masterplan-star" aria-hidden="true">★</span></Link>
+          <span className="menu-item is-soon" aria-disabled="true">FAQs <small>Soon</small></span>
+        </nav>
+      </aside>
     </div>
   );
 }

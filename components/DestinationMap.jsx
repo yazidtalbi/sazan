@@ -34,53 +34,27 @@ export default function DestinationMap() {
                 <h2 className="enhanced-line-italic enhanced-line-mediterranean">Mediterranean</h2>
                 <div className="enhanced-experience-line">
                   <h2 className="enhanced-line-main">experience</h2>
+                  <p className="enhanced-top-right-desc">
+                Perfectly positioned between the Adriatic and Ionian Seas, Sazan Coast offers effortless access to Europe while remaining beautifully protected by nature. Close to everything. Unlike anywhere else.
+                  </p>
                 </div>
               </div>
-              <p className="enhanced-top-right-desc">
-                Perfectly positioned between the Adriatic and Ionian Seas, Sazan Coast offers effortless access to Europe while remaining beautifully protected by nature. Close to everything. Unlike anywhere else.
-              </p>
             </div>
           </div>
         </div>
-      </section>
+        </section>
 
       {/* MAP WIDGET SECTION */}
       <section id="art-of-living" className="art-section">
-        <div className="container">
-
         <div className="map-widget">
           <div className="map-graphic-wrapper">
             <div className="map-bg">
               <img src="/masterp.png?v=2" alt="Sazan Coast destination map" className="map-bg-img" />
-              <div className="map-pin pin-sazan active" style={{ left: '50%', top: '50%' }}>
-                <div className="pin-pulse"></div>
-                <div className="pin-dot"></div>
-                <span className="pin-label">Sazan Island</span>
-              </div>
-
-              <div className={`map-pin pin-vlore ${activeTarget === 'vlore' ? 'active' : ''}`} style={{ left: '38%', top: '33.3%' }} onClick={() => setActiveTarget('vlore')}>
-                <div className="pin-dot"></div>
-                <span className="pin-label">City of Vlorë</span>
-              </div>
-
-              <div className={`map-pin pin-airport ${activeTarget === 'airport' ? 'active' : ''}`} style={{ left: '32%', top: '60%' }} onClick={() => setActiveTarget('airport')}>
-                <div className="pin-dot"></div>
-                <span className="pin-label">Vlorë Airport</span>
-              </div>
-
-              <div className={`map-pin pin-tirana ${activeTarget === 'tirana' ? 'active' : ''}`} style={{ left: '68%', top: '30%' }} onClick={() => setActiveTarget('tirana')}>
-                <div className="pin-dot"></div>
-                <span className="pin-label">Tirana Airport</span>
-              </div>
-
-              <div className={`map-pin pin-corfu ${activeTarget === 'corfu' ? 'active' : ''}`} style={{ left: '62%', top: '73.3%' }} onClick={() => setActiveTarget('corfu')}>
-                <div className="pin-dot"></div>
-                <span className="pin-label">Island of Corfu</span>
-              </div>
             </div>
           </div>
 
-          <div className="map-locations-grid">
+          <div className="map-locations-band">
+          <div className="map-locations-grid container">
             {tabs.map(tab => (
               <button
                 key={tab.id}
@@ -102,7 +76,7 @@ export default function DestinationMap() {
           </div>
         </div>
       </div>
-    </section>
+      </section>
     </>
   );
 }

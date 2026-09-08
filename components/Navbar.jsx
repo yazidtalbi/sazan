@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-export default function Navbar({ onOpenMenu }) {
+export default function Navbar({ onOpenMenu, hidden = false }) {
   const [scrolled, setScrolled] = useState(false);
   const [light, setLight] = useState(false);
 
@@ -35,7 +35,7 @@ export default function Navbar({ onOpenMenu }) {
 
     const handleScroll = () => {
       frame = 0;
-      setScrolled(window.scrollY > 60);
+      setScrolled(window.scrollY > 20);
       setLight(isDarkSurface());
     };
 
@@ -53,7 +53,7 @@ export default function Navbar({ onOpenMenu }) {
   }, []);
 
   return (
-    <header className={`site-header ${scrolled ? 'scrolled' : ''} ${light ? 'navbar-light' : ''}`}>
+    <header className={`site-header ${scrolled ? 'scrolled' : ''} ${light ? 'navbar-light' : ''} ${hidden ? 'is-hidden' : ''}`}>
       <div className="header-container">
         <div className="nav-left">
           <button className="nav-button btn-menu-text" onClick={onOpenMenu} aria-label="Open Menu">
@@ -76,7 +76,6 @@ export default function Navbar({ onOpenMenu }) {
               <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
-          <a href="#inquiries" className="nav-button btn-sharp">RESERVE</a>
         </div>
       </div>
     </header>
