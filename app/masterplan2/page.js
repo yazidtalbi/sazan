@@ -14,7 +14,7 @@ export default function MasterplanPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [navbarVisible, setNavbarVisible] = useState(false);
   const [stage, setStage] = useState('video');
-  const [markersVisible, setMarkersVisible] = useState(true);
+  const [markersVisible, setMarkersVisible] = useState(false);
   const [mapReady, setMapReady] = useState(true);
   const [mapDragging, setMapDragging] = useState(false);
   const [mapGliding, setMapGliding] = useState(false);
@@ -196,24 +196,14 @@ export default function MasterplanPage() {
                   playsInline
                   preload="auto"
                   className="full-viewport-video"
-                  onPlay={(event) => {
-                    if (event.currentTarget.currentTime < 0.25) {
-                      setMarkersVisible(false);
-                      setMapReady(false);
-                      mapPanRef.current = { x: 0, y: 0 };
-                      setMapPan({ x: 0, y: 0 });
-                      if (zoomTimerRef.current) window.clearTimeout(zoomTimerRef.current);
-                      zoomTimerRef.current = window.setTimeout(() => {
-                        setMapReady(true);
-                        zoomTimerRef.current = null;
-                      }, 1000);
-                    } else {
-                      setMapReady(true);
-                    }
+                  onPlay={() => {
+                    setMapReady(true);
                   }}
                   onTimeUpdate={(event) => {
                     const { currentTime, duration } = event.currentTarget;
-                    setMarkersVisible(Number.isFinite(duration) && duration > 0 && currentTime >= Math.max(0, duration - 2.5));
+                    if (Number.isFinite(duration) && duration > 0 && currentTime >= Math.max(0, duration - 2.5)) {
+                      setMarkersVisible(true);
+                    }
                   }}
                   onEnded={(event) => {
                     event.currentTarget.pause();
