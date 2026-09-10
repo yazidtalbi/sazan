@@ -2,8 +2,9 @@
 
 .page { --ink: #514329; --title: #07503f; --yellow: #f0ce50; height: 300svh; background: #e7e7e2; color: var(--ink); }
 .stage { position: sticky; top: 0; height: 100svh; min-height: 620px; overflow: hidden; isolation: isolate; background: #e7e7e2; }
-.backdrop { position: absolute; inset: 0; z-index: -2; display: grid; place-items: center; mix-blend-mode: multiply; }
-.canvas { width: 88%; height: 100%; object-fit: contain; background: url('/ph/frames/straw-001.jpg') center / contain no-repeat; mask-image: radial-gradient(ellipse 64% 53% at center, #000 54%, transparent 100%); }
+.openingStatement { position: absolute; z-index: 0; top: 19%; left: 50%; width: min(92%, 1350px); transform: translate3d(-50%, calc(var(--ph-progress, 0) * -200svh), 0); color: var(--title); font-family: 'Biblon ITC', Impact, 'Arial Narrow', sans-serif; font-size: clamp(68px, 8.4vw, 142px); font-weight: 700; letter-spacing: -.045em; line-height: .88; text-align: center; will-change: transform; }
+.backdrop { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; pointer-events: none; }
+.canvas { width: 88%; height: 100%; object-fit: contain; }
 .header { position: absolute; top: 25px; left: 4%; right: 4%; display: flex; align-items: center; justify-content: space-between; z-index: 5; }
 .logo { font-family: 'Biblon ITC', Georgia, serif; font-size: 50px; font-weight: 700; letter-spacing: -5px; line-height: 1; }
 .logo span { display: inline-block; font: 11px Arial, sans-serif; letter-spacing: 0; vertical-align: top; margin: 7px 0 0 7px; }
@@ -21,7 +22,7 @@
 .headline { position: absolute; top: 16%; left: 4%; }
 .eyebrow { display: block; margin-bottom: 17px; }
 .headline h1 { font-family: 'Biblon ITC', Impact, 'Arial Narrow', sans-serif; font-weight: 700; font-size: clamp(58px, 6.6vw, 112px); letter-spacing: -.04em; line-height: .91; color: var(--title); }
-.botanical { position: absolute; z-index: -1; color: var(--yellow); width: 270px; right: -33px; top: -40px; transform: rotate(-27deg); opacity: .7; }
+.botanical { position: absolute; z-index: 2; color: var(--yellow); width: 270px; right: -33px; top: -40px; transform: rotate(-27deg); opacity: .7; }
 .annotation { position: absolute; top: 47%; left: 18%; width: 160px; }
 .annotation svg { width: 85px; height: 85px; margin: -40px 0 4px 38px; transform: rotate(-14deg); }
 .annotation p { font-family: var(--font-serif), Georgia, serif; font-style: italic; font-size: 21px; line-height: 1.15; white-space: pre-line; color: var(--ink); }
@@ -53,6 +54,7 @@
   .logo { font-size: 43px; }
   .headerNote { display: none; }
   .headline { top: 112px; left: 6%; }
+  .openingStatement { top: 24%; width: 94%; font-size: clamp(45px, 13vw, 64px); line-height: .92; }
   .headline h1 { font-size: clamp(48px, 12.5vw, 74px); }
   .eyebrow { font-size: 7px; margin-bottom: 13px; }
   .botanical { width: 180px; right: -40px; top: 0; }

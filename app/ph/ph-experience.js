@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import styles from './ph.module.css';
 
 const FRAME_COUNT = 120;
-const frameUrl = (index) => `/ph/frames/straw-${String(index + 1).padStart(3, '0')}.jpg`;
+const frameUrl = (index) => `/ph/frames-alpha/straw-${String(index + 1).padStart(3, '0')}.png`;
 const chapters = [
   { label: 'A closer look', title: <>Nature.<br />Unfiltered.</>, note: 'There’s more to a berry\nthan meets the eye.', copy: 'Perfectly imperfect. Beautifully complex. Take a closer look at the little things that make nature extraordinary.', bottom: <>The real<br />good stuff.</>, side: <>A little<br />closer.</> },
   { label: 'A little transformation', title: <>Good things<br />take time.</>, note: 'A little change.\nA whole new perspective.', copy: 'Nothing in nature stands still. Follow the transformation, and see something familiar in a completely different light.', bottom: <>Let nature<br />do its thing.</>, side: <>Every<br />little detail.</> },
@@ -45,6 +45,7 @@ export default function PhExperience() {
       const distance = root.offsetHeight - window.innerHeight;
       const progress = Math.max(0, Math.min(1, -root.getBoundingClientRect().top / Math.max(1, distance)));
       target = motion.matches ? 0 : Math.round(progress * (FRAME_COUNT - 1));
+      root.style.setProperty('--ph-progress', progress);
       progressRef.current.style.setProperty('--progress', progress);
       textRailRef.current.style.setProperty('--text-progress', progress);
       const nextChapter = Math.min(2, Math.floor(progress * 3));
@@ -57,6 +58,7 @@ export default function PhExperience() {
         if (nearest === -1 || Math.abs(index - target) < Math.abs(nearest - target)) nearest = index;
       }
       if (nearest !== -1 && nearest !== drawn) {
+        context.clearRect(0, 0, canvas.width, canvas.height);
         context.drawImage(frames.get(nearest), 0, 0, canvas.width, canvas.height);
         drawn = nearest;
       }
@@ -123,6 +125,7 @@ export default function PhExperience() {
   return (
     <main className={styles.page} ref={rootRef}>
       <div className={styles.stage}>
+        <h1 className={styles.openingStatement}>Reimagining How Food Moves<br />From Farms to Communities.</h1>
         <div className={styles.backdrop}>
           <canvas ref={canvasRef} width="1440" height="810" className={styles.canvas} role="img" aria-label="A strawberry slowly transforms from weathered to fresh as you scroll." />
         </div>
@@ -143,10 +146,10 @@ export default function PhExperience() {
         <div className={styles.textRail} ref={textRailRef}>
           {chapters.map((item, index) => (
             <section className={styles.textPanel} key={item.label} aria-label={item.label}>
-              <div className={styles.headline}>
+              {index > 0 && <div className={styles.headline}>
                 <span className={styles.eyebrow}>The everyday, reimagined</span>
                 <h1>{item.title}</h1>
-              </div>
+              </div>}
               <div className={styles.story}>
                 <span className={styles.storyIndex}>0{index + 1} / A small wonder</span>
                 <p>{item.copy}</p>
