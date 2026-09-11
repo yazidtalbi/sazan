@@ -32,7 +32,7 @@ export default function Masterplan2Locations({ visible, videoRef, heroRef, onSel
   const closeTimer = useRef(null);
   const suppressFocusRef = useRef(false);
   const maskId = useId().replaceAll(':', '');
-  const active = hovered ?? selected;
+  const active = selected;
   activeRef.current = active;
 
   useEffect(() => {
@@ -110,9 +110,8 @@ export default function Masterplan2Locations({ visible, videoRef, heroRef, onSel
     return () => window.removeEventListener('keydown', escape);
   });
 
-  const enter = (index, element) => {
+  const enter = (index) => {
     clearTimeout(closeTimer.current);
-    setSide(element.getBoundingClientRect().left < window.innerWidth / 2 ? 'right' : 'left');
     setHovered(index);
   };
   const leave = () => {
@@ -151,6 +150,7 @@ export default function Masterplan2Locations({ visible, videoRef, heroRef, onSel
         onClick={(event) => {
           if (selected === index) { close(); return; }
           enter(index, event.currentTarget);
+          setSide(event.currentTarget.getBoundingClientRect().left < window.innerWidth / 2 ? 'right' : 'left');
           setSelected(index);
           onSelectionChange?.(getTrackedPosition(tracking, index, videoRef.current.currentTime));
         }}
