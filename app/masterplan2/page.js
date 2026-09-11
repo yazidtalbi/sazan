@@ -5,6 +5,7 @@ import SmoothScroll from '@/components/SmoothScroll';
 import Navbar from '@/components/Navbar';
 import MenuDrawer from '@/components/MenuDrawer';
 import Masterplan2Locations from '@/components/Masterplan2Locations';
+import SeaGlitter from '@/components/SeaGlitter';
 import styles from './masterplan2.module.css';
 
 export default function MasterplanPage() {
@@ -185,6 +186,8 @@ export default function MasterplanPage() {
                   }}
                 />
 
+                <SeaGlitter videoRef={videoRef} className={styles.seaGlitter} />
+
                 <div className="masterplan-cloud" aria-hidden="true">
                   <img src="/island/cloud-overlay.png" alt="" />
                 </div>
@@ -221,4 +224,3 @@ export default function MasterplanPage() {
     </SmoothScroll>
   );
 }
-
