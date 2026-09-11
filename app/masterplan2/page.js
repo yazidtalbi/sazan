@@ -4,16 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import SmoothScroll from '@/components/SmoothScroll';
 import Navbar from '@/components/Navbar';
 import MenuDrawer from '@/components/MenuDrawer';
-import InquiryForm from '@/components/InquiryForm';
-import Footer from '@/components/Footer';
-import ParallaxImage from '@/components/ParallaxImage';
-import MasterplanProgram from '@/components/MasterplanProgram';
 import Masterplan2Locations from '@/components/Masterplan2Locations';
 import styles from './masterplan2.module.css';
 
 export default function MasterplanPage() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [navbarVisible, setNavbarVisible] = useState(false);
   const [stage, setStage] = useState('video');
   const [markersVisible, setMarkersVisible] = useState(false);
   const [mapReady, setMapReady] = useState(true);
@@ -37,26 +32,6 @@ export default function MasterplanPage() {
 
   useEffect(() => () => {
     if (inertiaFrameRef.current) window.cancelAnimationFrame(inertiaFrameRef.current);
-  }, []);
-
-  useEffect(() => {
-    let frame = 0;
-    const updateNavbar = () => {
-      frame = 0;
-      const heroHeight = heroRef.current?.offsetHeight || window.innerHeight;
-      setNavbarVisible(window.scrollY >= heroHeight - 2);
-    };
-    const scheduleUpdate = () => {
-      if (!frame) frame = window.requestAnimationFrame(updateNavbar);
-    };
-    updateNavbar();
-    window.addEventListener('scroll', scheduleUpdate, { passive: true });
-    window.addEventListener('resize', scheduleUpdate);
-    return () => {
-      window.removeEventListener('scroll', scheduleUpdate);
-      window.removeEventListener('resize', scheduleUpdate);
-      window.cancelAnimationFrame(frame);
-    };
   }, []);
 
   const setBoundedPan = (x, y) => {
@@ -149,8 +124,6 @@ export default function MasterplanPage() {
     if (inertiaFrameRef.current) window.cancelAnimationFrame(inertiaFrameRef.current);
     inertiaFrameRef.current = null;
     setMapGliding(false);
-    // Keep the selected zone in the current camera view; the card opens opposite it.
-
   };
 
   const changeMapView = (fullPlan) => {
@@ -171,7 +144,7 @@ export default function MasterplanPage() {
 
   return (
     <SmoothScroll>
-      <Navbar standalone hidden={!navbarVisible} onOpenMenu={() => setMenuOpen(true)} />
+      <Navbar standalone hidden onOpenMenu={() => setMenuOpen(true)} />
       <MenuDrawer standalone isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <main id="main-content" className="masterplan-page">
@@ -239,101 +212,13 @@ export default function MasterplanPage() {
           </div>
           <div className={styles.controls}>
             <button type="button" aria-pressed={overview} onClick={() => changeMapView(true)}>Full plan</button>
-            <button type="button" onClick={() => changeMapView(false)}>Replay film</button>
+            <button type="button" onClick={() => changeMapView(false)}>Replay</button>
           </div>
 
         </section>
-
-        {/* SECTION 3: Big Statement Callout & 2-Column Description */}
-        <section className="masterplan-quote-section masterplan-intro-section">
-          <div className="container">
-            <h2 className="masterplan-intro-title">The Masterplan</h2>
-            <h3 className="masterplan-big-quote">
-              The masterplan encompasses approximately 4.5 kilometres of beachfront,
-              creating one of the most significant mixed-use waterfront destinations
-              in the Mediterranean.
-            </h3>
-
-            <div className="quote-cols-grid">
-              <p>
-                Each island home is an architectural expression of privacy and sanctuary.
-                Integrating seamlessly into coastal topography, residences benefit from natural sea breezes,
-                panoramic sunset views, and private water access directly from private docks.
-              </p>
-              <p>
-                Designed with a strict environmental charter, 100% of energy requirements are fulfilled
-                through hidden solar arrays, while advanced marine engineering preserves local reef habitats
-                and tidal water circulation.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION 4: Interactive Masterplan Program */}
-        <MasterplanProgram showHeading={false} />
-
-        {/* SECTION 5: Grid Sections (Green Infrastructure & Masterplan Vision) */}
-        <section className="masterplan-grid-section">
-          <div className="container">
-            <div className="masterplan-two-cols">
-
-              {/* Left Column */}
-              <div className="masterplan-col-card">
-                <div className="masterplan-col-img">
-                  <ParallaxImage
-                    src="/masterplan/green-infrastructure.png"
-                    alt="Green Infrastructure"
-                    speed={0.45}
-                  />
-                </div>
-                <div className="masterplan-col-content">
-                  <h3>Green Infrastructure</h3>
-                  <p>
-                    Shaded pedestrian pathways, car-free electric mobility networks, and lush indigenous botanical gardens connect every quarter of the island, prioritizing wellness and tranquility.
-                  </p>
-                </div>
-              </div>
-
-              {/* Right Column */}
-              <div className="masterplan-col-card">
-                <div className="masterplan-col-img">
-                  <ParallaxImage
-                    src="/masterplan/masterplan-vision.png"
-                    alt="Masterplan Vision"
-                    speed={0.45}
-                  />
-                </div>
-                <div className="masterplan-col-content">
-                  <h3>Masterplan Vision</h3>
-                  <p>
-                    A unified architectural philosophy grounded in natural limestone, timber, and glass, creating seamless indoor-outdoor living spaces that honor Mediterranean heritage.
-                  </p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION 6: Benchmark Statement */}
-        <section className="benchmark-statement-section">
-          <div className="container">
-            <h2 className="benchmark-text">
-              By combining low-density development, land-scaped planning, ecological restoration,
-              sustainable engineering, public accessibility, high-quality architecture and responsible infrastructure,
-              the masterplan establishes a <em>new benchmark</em> for Mediterranean coastal development.
-            </h2>
-          </div>
-        </section>
-
-        {/* Inquiries Registration */}
-        <div className="home-inquiry-map">
-          <InquiryForm />
-        </div>
 
       </main>
-
-      <Footer standalone />
     </SmoothScroll>
   );
 }
+
