@@ -8,7 +8,8 @@ import InquiryForm from '@/components/InquiryForm';
 import Footer from '@/components/Footer';
 import ParallaxImage from '@/components/ParallaxImage';
 import MasterplanProgram from '@/components/MasterplanProgram';
-import MasterplanLocations from '@/components/MasterplanLocations';
+import Masterplan2Locations from '@/components/Masterplan2Locations';
+import styles from './masterplan2.module.css';
 
 export default function MasterplanPage() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -19,12 +20,12 @@ export default function MasterplanPage() {
   const [mapDragging, setMapDragging] = useState(false);
   const [mapGliding, setMapGliding] = useState(false);
   const [mapPan, setMapPan] = useState({ x: 0, y: 0 });
-  const [focusPosition, setFocusPosition] = useState(null);
+  const [overview, setOverview] = useState(false);
+  const [mapVersion, setMapVersion] = useState(0);
   const videoRef = useRef(null);
   const mapDragRef = useRef(null);
   const mapPanRef = useRef({ x: 0, y: 0 });
   const inertiaFrameRef = useRef(null);
-  const zoomTimerRef = useRef(null);
   const heroRef = useRef(null);
 
   useEffect(() => {
@@ -36,7 +37,6 @@ export default function MasterplanPage() {
 
   useEffect(() => () => {
     if (inertiaFrameRef.current) window.cancelAnimationFrame(inertiaFrameRef.current);
-    if (zoomTimerRef.current) window.clearTimeout(zoomTimerRef.current);
   }, []);
 
   useEffect(() => {
@@ -59,9 +59,11 @@ export default function MasterplanPage() {
     };
   }, []);
 
-  const setBoundedPan = (x, y, focused = Boolean(focusPosition)) => {
-    const maxX = window.innerWidth * (focused ? 0.2 : 0.15);
-    const maxY = window.innerHeight * (focused ? 0.2 : 0.15);
+  const setBoundedPan = (x, y) => {
+    const canvas = videoRef.current?.parentElement;
+    const scale = overview ? 1 : 1.3;
+    const maxX = Math.max(0, ((canvas?.offsetWidth || window.innerWidth) * scale - window.innerWidth) / 2);
+    const maxY = Math.max(0, ((canvas?.offsetHeight || window.innerHeight) * scale - window.innerHeight) / 2);
     const next = {
       x: Math.max(-maxX, Math.min(maxX, x)),
       y: Math.max(-maxY, Math.min(maxY, y)),
@@ -143,24 +145,28 @@ export default function MasterplanPage() {
     inertiaFrameRef.current = window.requestAnimationFrame(glide);
   };
 
-  const handleLocationSelection = (position) => {
+  const handleLocationSelection = () => {
     if (inertiaFrameRef.current) window.cancelAnimationFrame(inertiaFrameRef.current);
     inertiaFrameRef.current = null;
     setMapGliding(false);
-    setFocusPosition(position);
-    if (position) {
-      const locationX = Number.parseFloat(position.left) / 100;
-      const locationY = Number.parseFloat(position.top) / 100;
-      const canvasWidth = Math.max(window.innerWidth, window.innerHeight * (16 / 9));
-      const canvasHeight = Math.max(window.innerHeight, window.innerWidth * (9 / 16));
-      const drawerShift = -window.innerWidth * 0.07;
-      const targetX = drawerShift + (0.5 - locationX) * canvasWidth * 0.55;
-      const targetY = (0.5 - locationY) * canvasHeight * 0.45;
-      setBoundedPan(targetX, targetY, true);
-    } else {
-      mapPanRef.current = { x: 0, y: 0 };
-      setMapPan({ x: 0, y: 0 });
-    }
+    // Keep the selected zone in the current camera view; the card opens opposite it.
+
+  };
+
+  const changeMapView = (fullPlan) => {
+    if (inertiaFrameRef.current) window.cancelAnimationFrame(inertiaFrameRef.current);
+    inertiaFrameRef.current = null;
+    mapDragRef.current = null;
+    setMapDragging(false);
+    setMapGliding(false);
+    mapPanRef.current = { x: 0, y: 0 };
+    setMapPan({ x: 0, y: 0 });
+    setMapVersion((version) => version + 1);
+    setOverview(fullPlan);
+    const video = videoRef.current;
+    video.pause();
+    video.currentTime = 0;
+    if (!fullPlan) video.play().catch(() => {});
   };
 
   return (
@@ -171,7 +177,7 @@ export default function MasterplanPage() {
       <main id="main-content" className="masterplan-page">
 
         {/* FULL VIEWPORT HERO STAGE (100VW x 100VH) */}
-        <section ref={heroRef} className="masterplan-hero-stage">
+        <section ref={heroRef} className={`masterplan-hero-stage ${styles.hero} ${overview ? styles.overview : ''}`}>
 
           {/* Full Viewport Video Layer */}
           <div
@@ -182,7 +188,7 @@ export default function MasterplanPage() {
             onPointerCancel={stopMapDrag}
           >
             <div
-              className={`masterplan-map-canvas ${mapReady ? 'is-zoomed' : ''} ${mapDragging || mapGliding ? 'is-moving' : ''} ${focusPosition ? 'has-selection' : ''}`}
+              className={`masterplan-map-canvas ${mapReady ? 'is-zoomed' : ''} ${mapDragging || mapGliding ? 'is-moving' : ''}`}
               style={{
                 '--map-pan-x': `${mapPan.x}px`,
                 '--map-pan-y': `${mapPan.y}px`,
@@ -196,14 +202,9 @@ export default function MasterplanPage() {
                   playsInline
                   preload="auto"
                   className="full-viewport-video"
+                  onLoadedData={() => setMarkersVisible(true)}
                   onPlay={() => {
                     setMapReady(true);
-                  }}
-                  onTimeUpdate={(event) => {
-                    const { currentTime, duration } = event.currentTarget;
-                    if (Number.isFinite(duration) && duration > 0 && currentTime >= Math.max(0, duration - 2.5)) {
-                      setMarkersVisible(true);
-                    }
                   }}
                   onEnded={(event) => {
                     event.currentTarget.pause();
@@ -215,17 +216,12 @@ export default function MasterplanPage() {
                   <img src="/island/cloud-overlay.png" alt="" />
                 </div>
 
-                <MasterplanLocations
-                  editorKey="sazan-masterplan2-placements"
+                <Masterplan2Locations
+                  key={mapVersion}
+                  videoRef={videoRef}
+                  heroRef={heroRef}
                   visible={markersVisible}
                   onSelectionChange={handleLocationSelection}
-                  logos={[
-                    '/logos/Atlantis-The-Royal-Logo 1-white.png',
-                    '/logos/aliee-logo-white.svg',
-                    '/logos/Raffles_Hotels_&_Resorts_logo.svg-white.png',
-                    '/logos/LOGO-CHEVAL-BLANC-white.png',
-                    null,
-                  ]}
                 />
               </div>
             </div>
@@ -239,7 +235,11 @@ export default function MasterplanPage() {
                 </svg>
               </div>
             )}
-            <span className={`masterplan-drag-hint ${mapReady ? 'is-visible' : ''}`}>Drag to explore</span>
+            <span className={`masterplan-drag-hint ${mapReady ? 'is-visible' : ''}`}>{overview ? 'Select a location to explore' : 'Drag to explore'}</span>
+          </div>
+          <div className={styles.controls}>
+            <button type="button" aria-pressed={overview} onClick={() => changeMapView(true)}>Full plan</button>
+            <button type="button" onClick={() => changeMapView(false)}>Replay film</button>
           </div>
 
         </section>

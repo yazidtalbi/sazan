@@ -46,6 +46,13 @@ export default function PhExperience() {
       const progress = Math.max(0, Math.min(1, -root.getBoundingClientRect().top / Math.max(1, distance)));
       target = motion.matches ? 0 : Math.round(progress * (FRAME_COUNT - 1));
       root.style.setProperty('--ph-progress', progress);
+      // Dock the visible fruit (about 84% of the source height) above the next heading.
+      const shrink = Math.max(0, Math.min(1, (progress - 0.72) / 0.28));
+      const eased = motion.matches ? (shrink === 1 ? 1 : 0) : shrink * shrink * (3 - 2 * shrink);
+      const renderedHeight = Math.min(canvas.clientHeight, canvas.clientWidth * 810 / 1440);
+      const finalScale = Math.min(1, 100 / (renderedHeight * 0.84));
+      canvas.style.transform = `translateY(${(canvas.clientHeight / 2 - 70) * eased}px) scale(${1 + (finalScale - 1) * eased})`;
+      root.style.setProperty('--scene-opacity', 1 - eased);
       progressRef.current.style.setProperty('--progress', progress);
       textRailRef.current.style.setProperty('--text-progress', progress);
       const nextChapter = Math.min(2, Math.floor(progress * 3));
@@ -123,7 +130,7 @@ export default function PhExperience() {
   }
 
   return (
-    <main className={styles.page} ref={rootRef}>
+    <div className={styles.page} ref={rootRef}>
       <div className={styles.stage}>
         <h1 className={styles.openingStatement}>Reimagining How Food Moves<br />From Farms to Communities.</h1>
         <div className={styles.backdrop}>
@@ -168,6 +175,6 @@ export default function PhExperience() {
           <span className={styles.edition}>Nature study — Nº 001</span>
         </footer>
       </div>
-    </main>
+    </div>
   );
 }

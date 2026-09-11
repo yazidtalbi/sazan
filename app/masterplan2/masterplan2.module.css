@@ -1,0 +1,64 @@
+.hero :global(.is-tracked) {
+  width: 28px;
+  height: 28px;
+  background: #fff;
+}
+
+.hero :global(.is-tracked) > span {
+  width: 10px;
+  height: 10px;
+  border-radius: 0 !important;
+  background: linear-gradient(#493d30, #493d30) center / 2px 10px no-repeat,
+    linear-gradient(#493d30, #493d30) center / 10px 2px no-repeat;
+}
+
+.hero :global(.is-tracked:focus-visible) {
+  outline: 2px solid #493d30;
+  outline-offset: 4px;
+}
+
+.controls {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 20;
+  display: flex;
+  gap: 8px;
+}
+
+.controls button {
+  padding: 12px 16px;
+  background: #fff;
+  color: #493d30;
+  border: 1px solid #493d3033;
+  font: 400 12px/1.2 var(--font-sans);
+  cursor: pointer;
+}
+
+.controls button[aria-pressed='true'] {
+  background: #493d30;
+  color: #fff;
+}
+
+.overview :global(.masterplan-map-canvas) {
+  width: min(100vw, 177.7778vh);
+  height: min(100vh, 56.25vw);
+  transform: translate3d(-50%, -50%, 0);
+}
+
+.overview :global(.masterplan-map-breath) {
+  animation: none;
+  transform: none;
+}
+
+.overview :global(.masterplan-cloud),
+.overview :global(.masterplan-passing-bird) {
+  display: none;
+}
+
+.overview :global(.masterplan-video-layer) { background: #186783; }
+
+@media (max-width: 760px) {
+  .controls { top: 16px; left: 16px; }
+  .overview :global(.is-tracked) { width: 20px; height: 20px; }
+}

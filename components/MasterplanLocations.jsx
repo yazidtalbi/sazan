@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { getTrackedPosition } from '@/lib/tracked-position';
 
 const DEFAULT_LOGOS = [
   '/logos/Atlantis-The-Royal-Logo 1-white.png',
@@ -11,7 +12,7 @@ const DEFAULT_LOGOS = [
   null,
 ];
 
-const locations = [
+const DEFAULT_LOCATIONS = [
   {
     name: 'Atlantis The Royal',
     type: 'Hospitality & Luxury Living',
@@ -54,7 +55,7 @@ const locations = [
   },
 ];
 
-export default function MasterplanLocations({ visible = false, onSelectionChange, logos = DEFAULT_LOGOS, editorKey, showTools = false }) {
+export default function MasterplanLocations({ visible = false, onSelectionChange, logos = DEFAULT_LOGOS, editorKey, showTools = false, locations = DEFAULT_LOCATIONS, videoRef, tracking }) {
   const [selected, setSelected] = useState(null);
   const [mounted, setMounted] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -63,6 +64,42 @@ export default function MasterplanLocations({ visible = false, onSelectionChange
   const [saveStatus, setSaveStatus] = useState('');
   const markersRef = useRef(null);
   const dragRef = useRef(null);
+
+  useEffect(() => {
+    const video = videoRef?.current;
+    if (!video || !tracking) return;
+    let callback;
+    const hasVideoFrames = typeof video.requestVideoFrameCallback === 'function';
+    const update = (time = video.currentTime) => {
+      markersRef.current?.querySelectorAll('button').forEach((marker, index) => {
+        const position = getTrackedPosition(tracking, index, time);
+        marker.style.left = position.left;
+        marker.style.top = position.top;
+        const x = parseFloat(position.left);
+        const y = parseFloat(position.top);
+        const inFrame = x >= 0 && x <= 100 && y >= 0 && y <= 100;
+        marker.style.visibility = inFrame ? '' : 'hidden';
+        marker.tabIndex = visible && inFrame ? 0 : -1;
+      });
+    };
+    const onFrame = (_, metadata) => {
+      update(metadata?.mediaTime ?? video.currentTime);
+      callback = hasVideoFrames ? video.requestVideoFrameCallback(onFrame) : requestAnimationFrame(onFrame);
+    };
+    const onSeek = () => update();
+    update();
+    callback = hasVideoFrames ? video.requestVideoFrameCallback(onFrame) : requestAnimationFrame(onFrame);
+    video.addEventListener('seeked', onSeek);
+    video.addEventListener('loadeddata', onSeek);
+    video.addEventListener('ended', onSeek);
+    return () => {
+      if (hasVideoFrames) video.cancelVideoFrameCallback(callback);
+      else cancelAnimationFrame(callback);
+      video.removeEventListener('seeked', onSeek);
+      video.removeEventListener('loadeddata', onSeek);
+      video.removeEventListener('ended', onSeek);
+    };
+  }, [videoRef, tracking, visible]);
 
   useEffect(() => {
     if (!editorKey) return;
@@ -167,8 +204,9 @@ export default function MasterplanLocations({ visible = false, onSelectionChange
           <button
             key={item.name}
             type="button"
-            className={`masterplan-location-dot ${logos ? 'has-logo' : ''} ${selected === index ? 'is-active' : ''}`}
+            className={`masterplan-location-dot ${logos?.[index] ? 'has-logo' : ''} ${tracking ? 'is-tracked' : ''} ${selected === index ? 'is-active' : ''}`}
             style={positions[index]}
+            tabIndex={visible ? 0 : -1}
             aria-label={`${editing ? 'Move' : 'Explore'} ${item.name}`}
             aria-expanded={selected === index}
             onPointerDown={(event) => startMarkerDrag(event, index)}
@@ -179,7 +217,7 @@ export default function MasterplanLocations({ visible = false, onSelectionChange
             onClick={() => {
               if (editing) return;
               setSelected(index);
-              onSelectionChange?.(positions[index]);
+              onSelectionChange?.(tracking ? getTrackedPosition(tracking, index, videoRef.current.currentTime) : positions[index]);
             }}
           >
             <span aria-hidden="true" />

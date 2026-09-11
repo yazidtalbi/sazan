@@ -1,4 +1,5 @@
 import PhExperience from './ph-experience';
+import HarvestSections from './harvest-sections';
 
 export const metadata = {
   title: 'PH — A fresh perspective',
@@ -6,5 +7,5 @@ export const metadata = {
 };
 
 export default function PhPage() {
-  return <PhExperience />;
+  return <main><PhExperience /><HarvestSections /></main>;
 }

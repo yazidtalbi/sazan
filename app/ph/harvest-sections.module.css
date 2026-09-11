@@ -1,0 +1,87 @@
+.harvest { --green: #07503f; background: #e7e7e2; color: var(--green); position: relative; z-index: 3; }
+.harvest h2, .harvest h3 { font-family: 'Biblon ITC', Georgia, serif; font-weight: 700; color: inherit; letter-spacing: -.035em; }
+.harvest p { color: inherit; font-size: clamp(14px, 1.3vw, 19px); line-height: 1.35; }
+.harvest :global(.site-reveal) { opacity: 1; transform: none; filter: none; }
+.harvest a:focus-visible { outline: 2px solid currentColor; outline-offset: 6px; }
+/* Scoped override of the global square-corner reset. */
+.harvest .card, .harvest .copyPanel, .harvest .imagePlaceholder { border-radius: 22px !important; overflow: hidden; }
+.harvest .cardImage { border-radius: 14px !important; }
+.intro { padding: 20px 20px 0; }
+.sectionTitle { text-align: center; font-size: clamp(36px, 4.5vw, 68px); line-height: .98; margin-bottom: 90px; }
+.stackingRows { position: relative; }
+.splitRow { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; min-height: min(680px, 78svh); }
+.purposeRow { position: sticky; top: 20px; }
+.sourcingRow { position: relative; z-index: 2; margin-top: 24svh; box-shadow: 0 -25px 55px #032f2014; background: #e7e7e2; padding-top: 18px; }
+.imagePlaceholder { background: #36734d; min-height: 100%; }
+.harvestingImage { background: #48805a; }
+.copyPanel { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: clamp(35px, 7vw, 110px); }
+.copyPanel h3 { max-width: 440px; font-size: clamp(27px, 2.9vw, 44px); line-height: 1; }
+.copyPanel p { max-width: 410px; margin-top: 50px; }
+.darkPanel { background: var(--green); color: #f4f1e8; }
+.lightPanel { background: #f0f1e3; }
+.vision { padding: 0 40px 90px; text-align: center; }
+.fieldMark { display: flex; align-items: center; justify-content: center; gap: 25px; color: #698069; font-size: 65px; padding: 25px 0 80px; }
+.fieldMark span { width: 150px; height: 1px; background: linear-gradient(90deg, transparent, #698069); }
+.fieldMark span:last-child { transform: rotate(180deg); }
+.vision h2 { font-size: clamp(30px, 3.3vw, 50px); line-height: 1.04; max-width: 790px; margin: 0 auto 170px; color: #333c32; }
+.landscape { width: 100%; min-height: 0; aspect-ratio: 2.15; background: #35764c; }
+.pillars { position: relative; padding: 120px 7% 150px; min-height: 1150px; }
+.pillarsTitle { position: sticky; top: 20svh; text-align: center; font-size: clamp(70px, 15.7vw, 250px); line-height: .95; white-space: nowrap; margin: 0 -5%; color: var(--green); z-index: 0; }
+.cards { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 4%; margin-top: 20px; }
+.card { padding: 18px 18px 32px; transform: translate3d(0, var(--card-shift, 0px), 0); will-change: transform; scroll-margin-top: 130px; }
+.card0 { background: #eff0e2; margin-top: 130px; }
+.card1 { background: #eef5ff; margin-top: -20px; }
+.card2 { background: #fceefa; margin-top: 80px; }
+.cardImage { min-height: 0; aspect-ratio: .8; background: #588063; }
+.card1 .cardImage { background: #3d7554; }
+.card2 .cardImage { background: #226345; }
+.card h3 { font-size: clamp(24px, 2.35vw, 38px); line-height: 1; margin: 24px 5px 14px; color: #343f32; }
+.card p { font-size: clamp(13px, 1.18vw, 18px); margin: 0 5px; color: #697261; }
+.callout { background: #a9c76b; min-height: 520px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 50px; padding: 90px 24px; }
+.callout h2 { font-size: clamp(32px, 3.8vw, 58px); line-height: 1.03; max-width: 780px; }
+.button { background: #062d20; color: white; padding: 13px 35px; display: inline-flex; align-items: center; gap: 30px; font-size: 14px; }
+.button:hover, .footerButton:hover { opacity: .75; }
+.siteFooter { padding: 85px 4% 30px; background: #032f23; color: #f7f6ed; }
+.footerNav { display: grid; grid-template-columns: 1fr 1.2fr 1fr 1.5fr; max-width: 1100px; gap: 30px; }
+.footerNav > div { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; font-size: 13px; }
+.footerNav > div > span { font-size: 11px; color: #abbcaf; margin-bottom: 12px; }
+.footerNav p { font-size: 13px; }
+.footerNav a:hover { opacity: .65; }
+.footerButton { background: #f7f6ed; color: #032f23; padding: 8px 20px; margin-top: 5px; }
+.wordmark { display: block; font-family: 'Biblon ITC', Georgia, serif; font-size: clamp(65px, 14.2vw, 230px); font-weight: 700; line-height: 1; letter-spacing: -.065em; margin: 110px 0 70px; white-space: nowrap; text-align: center; }
+.footerBottom { display: flex; justify-content: space-between; gap: 20px; border-top: 1px solid #ffffff25; padding-top: 30px; font-size: 11px; color: #b5c4b7; }
+@media (max-width: 900px) { .copyPanel { padding: 35px; } .copyPanel p { margin-top: 30px; } .pillars { min-height: 900px; padding-left: 4%; padding-right: 4%; } .cards { gap: 3%; } .card { padding: 12px 12px 25px; } .vision h2 { margin-bottom: 90px; } }
+@media (max-width: 699px) {
+  .intro { padding: 20px 16px 0; }
+  .sectionTitle { margin-bottom: 50px; font-size: 36px; }
+  .splitRow { grid-template-columns: 1fr; gap: 0; min-height: 0; }
+  .purposeRow { top: -160px; }
+  .splitRow > .imagePlaceholder { min-height: 230px; }
+  .copyPanel { padding: 45px 28px; min-height: 340px; }
+  .copyPanel h3 { font-size: 28px; }
+  .sourcingRow { margin-top: 14svh; padding-top: 0; }
+  .sourcingRow .imagePlaceholder { min-height: 310px; }
+  .vision { padding: 0 20px 45px; }
+  .fieldMark { padding-bottom: 40px; font-size: 45px; }
+  .vision h2 { font-size: 30px; margin-bottom: 65px; }
+  .desktopBreak { display: none; }
+  .landscape { aspect-ratio: 1.35; }
+  .pillars { padding: 70px 8% 60px; min-height: 0; }
+  .pillarsTitle { font-size: 16vw; top: 80px; margin: 0 -5%; }
+  .cards { grid-template-columns: 1fr; gap: 70px; margin-top: 45px; }
+  .card { width: 87%; margin-top: 0; padding: 16px 16px 28px; }
+  .card1 { justify-self: end; }
+  .cardImage { aspect-ratio: 1; }
+  .card h3 { font-size: 29px; }
+  .card p { font-size: 15px; }
+  .callout { min-height: 400px; gap: 30px; padding: 65px 28px; }
+  .siteFooter { padding: 55px 6% 25px; }
+  .footerNav { grid-template-columns: 1fr 1fr; gap: 40px 25px; }
+  .wordmark { font-size: 13.7vw; margin: 70px 0 40px; }
+  .footerBottom { flex-wrap: wrap; font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .purposeRow, .pillarsTitle { position: relative; top: auto; }
+  .sourcingRow { margin-top: 18px; }
+  .card { transform: none; will-change: auto; }
+}
