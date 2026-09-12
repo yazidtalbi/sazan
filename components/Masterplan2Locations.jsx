@@ -123,9 +123,17 @@ export default function Masterplan2Locations({ visible, videoRef, heroRef, onSel
 
   return <>
     <svg className={`${styles.zones} ${active !== null ? styles.zoneVisible : ''}`} viewBox="0 0 1440 810" aria-hidden="true">
-      <defs><mask id={maskId}><rect width="1440" height="810" fill="white" /><path ref={cutoutRef} d={d} fill="black" /></mask></defs>
-      <rect width="1440" height="810" fill="#102329" fillOpacity=".38" mask={`url(#${maskId})`} />
-      <path ref={pathRef} d={d} fill="#fff" fillOpacity=".2" stroke="#fff8de" strokeWidth="1.2" vectorEffect="non-scaling-stroke" />
+      <defs>
+        <filter id={`${maskId}-soft-edge`} filterUnits="userSpaceOnUse" x="-48" y="-48" width="1536" height="906" colorInterpolationFilters="sRGB">
+          <feGaussianBlur stdDeviation="8" />
+        </filter>
+        <mask id={maskId}>
+          <rect width="1440" height="810" fill="white" />
+          <path ref={cutoutRef} d={d} fill="black" filter={`url(#${maskId}-soft-edge)`} />
+        </mask>
+      </defs>
+      <rect width="1440" height="810" fill="#102329" fillOpacity=".6" mask={`url(#${maskId})`} />
+      <path ref={pathRef} d={d} fill="#fff" fillOpacity=".2" filter={`url(#${maskId}-soft-edge)`} />
     </svg>
     <div ref={rootRef} className={`masterplan-locations ${visible ? 'markers-visible' : ''} ${styles.markers} ${active !== null ? styles.hasActive : ''}`}>
       {locations.map((item, index) => <button
