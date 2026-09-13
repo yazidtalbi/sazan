@@ -169,7 +169,7 @@ export default function MasterplanScene() {
     const halfHeight = zoom => baseDistance / zoom * Math.tan(THREE.MathUtils.degToRad(20));
     const boundTarget = () => {
       const halfY = halfHeight(target.zoom), halfX = halfY * camera.aspect;
-      // Reserve a small image border for perspective tilt and UV parallax.
+      // Reserve a small image border for depth parallax.
       const maxX = Math.max(0, ASPECT - halfX - .045);
       const maxY = Math.max(0, 1 - halfY - .045);
       const x = THREE.MathUtils.clamp(target.x, -maxX, maxX);
@@ -259,7 +259,7 @@ export default function MasterplanScene() {
       waterMask.minFilter = THREE.LinearFilter;
       waterMask.magFilter = THREE.LinearFilter;
       uniforms.uWaterMask.value = waterMask;
-      const geometry = new THREE.PlaneGeometry(ASPECT * 2, 2, 256, 136);
+      const geometry = new THREE.PlaneGeometry(ASPECT * 2, 2, 512, 272);
       const material = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader });
       geometries.push(geometry); materials.push(material);
       group.add(new THREE.Mesh(geometry, material));
@@ -292,7 +292,7 @@ export default function MasterplanScene() {
       width = viewport.clientWidth; height = viewport.clientHeight;
       renderer.setSize(width, height);
       camera.aspect = width / height;
-      // Cover the viewport with a small overscan for the mouse-driven tilt.
+      // Cover the viewport with a small overscan for the mouse-driven depth.
       baseDistance = Math.min(1, ASPECT / camera.aspect) / Math.tan(THREE.MathUtils.degToRad(20)) * .95;
       camera.updateProjectionMatrix();
       boundTarget();
@@ -411,7 +411,7 @@ export default function MasterplanScene() {
         target.y = (.5 - destination[1]) * 2 * amount * .33;
       }
       boundTarget();
-      // Ease zoom and its focal-point movement together, independently of mouse tilt.
+      // Ease zoom and its focal-point movement together, independently of mouse perspective.
       const zoomBlend = reducedRef.current ? 1 : 1 - Math.exp(-dt * 3);
       const cameraBlend = Math.abs(target.zoom - state.zoom) > .0001 && touches.size !== 1 ? zoomBlend : blend;
       state.zoom = THREE.MathUtils.lerp(state.zoom, target.zoom, zoomBlend);
@@ -429,12 +429,30 @@ export default function MasterplanScene() {
         focusBlurRef.current.style.opacity = String(THREE.MathUtils.smoothstep(state.zoom, 1, 2.6));
       }
       const drift = enabled ? Math.sin(elapsed * .13) * .002 : 0;
-      camera.position.set(state.x + smoothed.x * .040 + drift, state.y + smoothed.y * .030, baseDistance / state.zoom);
-      camera.lookAt(state.x, state.y, 0);
+      // Stronger lateral depth, plus a vertical orbit for near/far perspective.
+      // Extra framing room keeps the tilted map covering the viewport.
+      const viewX = (smoothed.x * .88 + drift) / state.zoom;
+      const viewY = smoothed.y * .64 / state.zoom;
+      // Follow the eased zoom so perspective strengthens without sudden jumps.
+      const tiltDegrees = THREE.MathUtils.lerp(1, 4, (state.zoom - 1) / 4);
+      // Positive Y is above center: soften that half further, especially near center.
+      const tiltInput = smoothed.y * Math.abs(smoothed.y) * (smoothed.y > 0 ? .35 : 1);
+      const pitch = tiltInput * THREE.MathUtils.degToRad(tiltDegrees);
+      const distance = baseDistance / state.zoom * (.88 + smoothed.y * .025);
+      camera.position.set(state.x + viewX,
+        state.y + viewY + Math.sin(pitch) * distance, Math.cos(pitch) * distance);
+      camera.rotation.set(-pitch, 0, 0);
       camera.updateMatrixWorld();
+      // Center the frustum on the navigation focus after pitching the camera.
+      // Pins and zone outlines use this same projection.
+      projected.set(state.x, state.y, 0).applyMatrix4(camera.matrixWorldInverse);
+      const frameHalfY = -projected.z * Math.tan(THREE.MathUtils.degToRad(20));
+      camera.setViewOffset(width, height,
+        projected.x * width / (2 * frameHalfY * camera.aspect),
+        -projected.y * height / (2 * frameHalfY), width, height);
       uniforms.uTime.value = elapsed;
       uniforms.uMotion.value = enabled ? 1 : 0;
-      uniforms.uRelief.value = enabled ? .008 + amount * .008 : 0;
+      uniforms.uRelief.value = enabled ? .012 + amount * .012 : 0;
       const planePixels = height / (Math.tan(THREE.MathUtils.degToRad(20)) * camera.position.z);
       // Fine roof outlines cannot tolerate a large per-pixel warp. Most of
       // the movement comes from the camera; UV relief is limited to 3px.

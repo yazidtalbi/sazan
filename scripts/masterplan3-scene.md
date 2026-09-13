@@ -10,6 +10,11 @@ sand/flat surfaces dark gray, vegetation mid gray, warm roofs light gray, and
 the central hotel footprint receives the brightest values. This is approximate
 artistic relief, not measured building heights. Beige roofs, shadows, and shallow
 water can be misclassified. The deliberately small displacement limits artifacts.
+The three oval Atlantis roofs have individually fitted, rotated elliptical
+profiles with raised rims and rounded crowns, overriding the patchy color
+classification inside each roof only. The central tall oval has the highest
+profile. Inward feathering preserves the adjacent pools and paths. A 512 × 272
+segment terrain mesh resolves these smaller curved footprints.
 For finer control, replace the depth PNG with a manually painted, registered map
 and regenerate the matching CPU grid (the last two lines of the script).
 
@@ -31,11 +36,22 @@ removes interpolation and release inertia.
 Zoom uses a slower 3/s exponential easing (about one second to settle 95%) for
 wheel, pinch, buttons, and keyboard input. Wheel sensitivity is reduced, and all
 manual zoom factors are softened to 75% in log space. Focal-point movement eases
-with zoom; single-pointer dragging and mouse tilt retain their own response.
+with zoom; single-pointer dragging and mouse perspective retain their own response.
 
 Selecting a location redirects the camera toward its anchor. Subtle mouse
 UV parallax is limited to 3 screen pixels at maximum depth to preserve fine roof
-outlines; the perspective camera supplies the broader movement.
+outlines. Mouse movement translates the camera horizontally and vertically with
+an off-axis frustum: horizontal and vertical depth offsets are 0.88 and 0.64 world units at 100%
+zoom. Terrain relief is 0.012–0.024 world units, adding more separation between
+raised features and water without increasing the UV warp. Vertical movement also pitches the camera up
+to 1 degree at 100% zoom, increasing to 4 degrees at 500% zoom. Upward
+movement uses only 35% of that tilt (0.35–1.4 degrees). A quadratic pointer
+response softens tilt near the center. The camera also changes
+viewing distance slightly for a near/far effect. Tilt strength follows the eased
+zoom so zooming in and out changes perspective smoothly. Extra
+framing room keeps the tilted image covering the viewport. The frustum stays
+centered on the navigation focus, and offsets scale down with zoom and ease
+back to center on pointer leave.
 Three independent transparent clouds cross the map, including one near the top. Their
 shared alpha texture is projected by the map shader as offset, softly sampled
 shadows restricted to registered island estates and clipped away from water.
@@ -88,7 +104,7 @@ on desktop and uses the existing mobile layout. When WebGL is unavailable, the
 mask follows the fallback image's centered cover sizing through viewport resizes.
 
 The page has no navbar or introductory headline. The camera uses cover sizing with
-5% overscan, a 100% minimum zoom, and an inset pan boundary reserved for tilt.
+5% overscan, a 100% minimum zoom, and an inset pan boundary reserved for depth parallax.
 Both target and rendered camera positions are clamped, preventing exposed edges
 while zooming out, resizing, or easing after a drag. The static fallback also
 uses cover sizing. Portrait viewports crop the map; pan or use the location selector
