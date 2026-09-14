@@ -5,7 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "assets:masterplan-3d": "node scripts/build-masterplan-3d.mjs && node scripts/build-sazan-asset-kit.mjs",
+    "test:masterplan-3d:camera": "node --test tests/masterplan-3d-camera.test.mjs",
+    "test:masterplan-3d": "playwright test --config playwright.masterplan.config.mjs"
   },
   "dependencies": {
     "gsap": "^3.15.0",
@@ -14,5 +17,12 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "three": "^0.186.0"
+  },
+  "devDependencies": {
+    "@gltf-transform/core": "^4.5.0",
+    "@gltf-transform/extensions": "^4.5.0",
+    "@gltf-transform/functions": "^4.5.0",
+    "@playwright/test": "^1.63.0",
+    "meshoptimizer": "^1.2.0"
   }
 }
