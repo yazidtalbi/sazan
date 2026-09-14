@@ -26,10 +26,15 @@ const vertexShader = `
   varying vec2 vUv;
   uniform sampler2D uDepth;
   uniform float uRelief;
+  uniform vec2 uDepthFocus;
+  uniform float uFocusRelief;
+  uniform float uFocusRadius;
   void main() {
     vUv = uv;
     vec3 p = position;
-    p.z += texture2D(uDepth, uv).r * uRelief;
+    vec2 focusOffset = (p.xy - uDepthFocus) / uFocusRadius;
+    float localRelief = uFocusRelief * exp(-dot(focusOffset, focusOffset));
+    p.z += texture2D(uDepth, uv).r * (uRelief + localRelief);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
   }
 `;
@@ -95,6 +100,11 @@ export default function MasterplanScene() {
   const reducedRef = useRef(false);
   const navigationRef = useRef(null);
   const zoomLabelRef = useRef(null);
+  const controlsRef = useRef(null);
+  const controlsToggleRef = useRef(null);
+  const controlsOpenRef = useRef(false);
+  const [controlsOpen, setControlsOpen] = useState(false);
+  controlsOpenRef.current = controlsOpen;
   const [selected, setSelected] = useState(null);
   const [motion, setMotion] = useState(true);
   const [reduced, setReduced] = useState(false);
@@ -115,7 +125,10 @@ export default function MasterplanScene() {
 
   useEffect(() => {
     const escape = event => {
-      if (event.key === 'Escape' && selectedRef.current !== null) {
+      if (event.key === 'Escape' && controlsOpenRef.current) {
+        setControlsOpen(false);
+        controlsToggleRef.current?.focus({ preventScroll: true });
+      } else if (event.key === 'Escape' && selectedRef.current !== null) {
         markerRefs.current[selectedRef.current]?.focus({ preventScroll: true });
         setSelected(null);
       }
@@ -123,6 +136,23 @@ export default function MasterplanScene() {
     window.addEventListener('keydown', escape);
     return () => window.removeEventListener('keydown', escape);
   }, []);
+
+  useEffect(() => {
+    if (!controlsOpen) return;
+    const dismissOutside = event => {
+      if (!controlsRef.current?.contains(event.target) && !controlsToggleRef.current?.contains(event.target)) {
+        setControlsOpen(false);
+      }
+    };
+    const media = window.matchMedia('(max-width: 900px)');
+    const resize = () => { if (!media.matches) setControlsOpen(false); };
+    document.addEventListener('pointerdown', dismissOutside);
+    media.addEventListener('change', resize);
+    return () => {
+      document.removeEventListener('pointerdown', dismissOutside);
+      media.removeEventListener('change', resize);
+    };
+  }, [controlsOpen]);
 
   useEffect(() => {
     if (ready || !viewportRef.current) return;
@@ -188,6 +218,11 @@ export default function MasterplanScene() {
     const state = { zoom: 1, x: 0, y: overviewY() };
     const target = { zoom: 1, x: 0, y: overviewY() };
     const velocity = new THREE.Vector2();
+    const depthFocus = new THREE.Vector2(0, overviewY());
+    const focusRay = new THREE.Raycaster();
+    const focusPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+    const focusHit = new THREE.Vector3();
+    let zoomDepth = 0;
     const touches = new Map();
     let manual = false, lastGesture = null;
     const halfHeight = zoom => baseDistance / zoom * Math.tan(THREE.MathUtils.degToRad(20));
@@ -212,6 +247,10 @@ export default function MasterplanScene() {
       const rect = viewport.getBoundingClientRect();
       const nx = clientX === undefined ? 0 : (clientX - rect.left) / width * 2 - 1;
       const ny = clientY === undefined ? 0 : 1 - (clientY - rect.top) / height * 2;
+      if (touchDevice) {
+        focusRay.setFromCamera({ x: nx, y: ny }, camera);
+        if (focusRay.ray.intersectPlane(focusPlane, focusHit)) depthFocus.set(focusHit.x, focusHit.y);
+      }
       const before = halfHeight(target.zoom);
       target.zoom = THREE.MathUtils.clamp(target.zoom * Math.pow(factor, .75), 1, 5);
       const after = halfHeight(target.zoom);
@@ -228,6 +267,7 @@ export default function MasterplanScene() {
         target.zoom = Math.max(target.zoom, 1.6);
         target.x = (x - .5) * ASPECT * 2;
         target.y = (.5 - y) * 2;
+        depthFocus.set(target.x, target.y);
         boundTarget();
       },
     };
@@ -254,6 +294,8 @@ export default function MasterplanScene() {
       uImage: { value: null }, uDepth: { value: null },
       uPointer: { value: new THREE.Vector2() }, uTime: { value: 0 },
       uRelief: { value: .008 }, uMotion: { value: 1 },
+      uDepthFocus: { value: depthFocus.clone() },
+      uFocusRelief: { value: 0 }, uFocusRadius: { value: 1 },
       uWaterMask: { value: null }, uSunPosition: { value: new THREE.Vector2(.48, .52) },
       uGlitterLength: { value: 1 }, uGlitterStrength: { value: .32 },
     };
@@ -357,10 +399,8 @@ export default function MasterplanScene() {
           } else velocity.set(0, 0);
           boundTarget();
         }
-        // A single finger drives the same perspective input as desktop hover.
-        // Neutralize tilt while pinching so zoom remains easy to control.
-        if (event.pointerType !== 'mouse' && points.length === 1) pointAt(current.x, current.y);
-        else if (points.length > 1) pointer.set(0, 0);
+        // Keep perspective centered between the fingers throughout a pinch.
+        if (event.pointerType !== 'mouse') pointAt(current.x, current.y);
         lastGesture = current;
         return;
       }
@@ -380,7 +420,7 @@ export default function MasterplanScene() {
         time: performance.now() };
       host.setPointerCapture(event.pointerId);
       host.classList.add(styles.dragging);
-      if (event.pointerType !== 'mouse' && points.length === 1) pointAt(event.clientX, event.clientY);
+      if (event.pointerType !== 'mouse') pointAt(lastGesture.x, lastGesture.y);
       else pointer.set(0, 0);
     };
     const up = event => {
@@ -430,6 +470,12 @@ export default function MasterplanScene() {
     renderer.domElement.addEventListener('webglcontextlost', lost);
     let previous = 0, elapsed = 0;
     const projected = new THREE.Vector3();
+    // Keep markers and estate outlines on the same locally raised surface.
+    const reliefAt = (x, y) => {
+      const dx = ((x - .5) * ASPECT * 2 - uniforms.uDepthFocus.value.x) / uniforms.uFocusRadius.value;
+      const dy = ((.5 - y) * 2 - uniforms.uDepthFocus.value.y) / uniforms.uFocusRadius.value;
+      return uniforms.uRelief.value + uniforms.uFocusRelief.value * Math.exp(-(dx * dx + dy * dy));
+    };
     const animate = time => {
       if (!loaded || failed) return;
       const dt = Math.min((time - previous) / 1000 || .016, .05);
@@ -502,7 +548,10 @@ export default function MasterplanScene() {
       const tiltDegrees = THREE.MathUtils.lerp(1, 4, (state.zoom - 1) / 4);
       // Positive Y is above center: soften that half further, especially near center.
       const tiltInput = smoothed.y * Math.abs(smoothed.y) * (smoothed.y > 0 ? .35 : 1);
-      const pitch = tiltInput * THREE.MathUtils.degToRad(tiltDegrees);
+      const depthTarget = enabled && touchDevice ? THREE.MathUtils.smoothstep(state.zoom, 1, 3) : 0;
+      zoomDepth = THREE.MathUtils.lerp(zoomDepth, depthTarget, 1 - Math.exp(-dt * 6));
+      // Add an oblique view as the pinch closes in, even at the screen center.
+      const pitch = tiltInput * THREE.MathUtils.degToRad(tiltDegrees) + THREE.MathUtils.degToRad(10) * zoomDepth;
       const distance = baseDistance / state.zoom * (.88 + smoothed.y * .025);
       camera.position.set(state.x + viewX,
         state.y + viewY + Math.sin(pitch) * distance, Math.cos(pitch) * distance);
@@ -518,6 +567,9 @@ export default function MasterplanScene() {
       uniforms.uTime.value = elapsed;
       uniforms.uMotion.value = enabled ? 1 : 0;
       uniforms.uRelief.value = enabled ? .012 + amount * .012 : 0;
+      uniforms.uDepthFocus.value.lerp(depthFocus, 1 - Math.exp(-dt * 10));
+      uniforms.uFocusRelief.value = enabled ? .045 * zoomDepth : 0;
+      uniforms.uFocusRadius.value = Math.max(.12, halfHeight(state.zoom) * .85);
       const planePixels = height / (Math.tan(THREE.MathUtils.degToRad(20)) * camera.position.z);
       // Fine roof outlines cannot tolerate a large per-pixel warp. Most of
       // the movement comes from the camera; UV relief is limited to 3px.
@@ -558,7 +610,7 @@ export default function MasterplanScene() {
         const d = zones[active].map(polygon => polygon.map(([x, y], i) => {
           const depth = depthAt(x, y);
           projected.set((x - .5 - uniforms.uPointer.value.x * depth) * ASPECT * 2,
-            (.5 - y - uniforms.uPointer.value.y * depth) * 2, depth * uniforms.uRelief.value).project(camera);
+            (.5 - y - uniforms.uPointer.value.y * depth) * 2, depth * reliefAt(x, y)).project(camera);
           return `${i ? 'L' : 'M'}${((projected.x + 1) * width / 2).toFixed(2)},${((1 - projected.y) * height / 2).toFixed(2)}`;
         }).join(' ') + 'Z').join(' ');
         zonePathRef.current?.setAttribute('d', d);
@@ -571,7 +623,7 @@ export default function MasterplanScene() {
         const depth = depthAt(x, y);
         // Invert the shader's UV offset, then use the same camera projection.
         projected.set((x - .5 - uniforms.uPointer.value.x * depth) * ASPECT * 2,
-          (.5 - y - uniforms.uPointer.value.y * depth) * 2, depth * uniforms.uRelief.value).project(camera);
+          (.5 - y - uniforms.uPointer.value.y * depth) * 2, depth * reliefAt(x, y)).project(camera);
         const px = (projected.x + 1) * width / 2, py = (1 - projected.y) * height / 2;
         marker.style.transform = `translate3d(${px}px, ${py}px, 0) translate(-50%, -50%)`;
         const visible = (active === null || active === i) && px > 20 && px < width - 20 && py > 24 && py < height - (width <= 900 ? 24 : 90);
@@ -609,13 +661,19 @@ export default function MasterplanScene() {
     };
   }, [forceFlat]);
 
+  const closeControls = () => {
+    if (controlsOpen) controlsToggleRef.current?.focus({ preventScroll: true });
+    setControlsOpen(false);
+  };
   const reset = () => {
+    closeControls();
     setSelected(null);
     navigationRef.current?.reset();
     window.scrollTo({ top: sectionRef.current.offsetTop, behavior: reduced ? 'instant' : 'smooth' });
   };
   const location = selected === null ? null : locations[selected];
   const selectLocation = index => {
+    closeControls();
     setSelected(index);
     if (index !== null) navigationRef.current?.focus(index);
   };
@@ -662,7 +720,19 @@ export default function MasterplanScene() {
             <dl>{location.stats.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
           </aside>}
           </div>
-          <footer className={styles.controls}>
+          <button ref={controlsToggleRef} type="button" className={styles.controlsToggle}
+            aria-expanded={controlsOpen} aria-controls="masterplan-controls"
+            onClick={() => setControlsOpen(open => !open)}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+              {controlsOpen ? <path d="m6 6 12 12M6 18 18 6" /> : <path d="M3 6h18M3 12h18M3 18h18" />}
+            </svg>
+            Controls
+          </button>
+          <footer ref={controlsRef} id="masterplan-controls" aria-label="Map controls"
+            className={`${styles.controls} ${controlsOpen ? styles.controlsOpen : ''}`}
+            onBlur={event => {
+              if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget) && event.relatedTarget !== controlsToggleRef.current) setControlsOpen(false);
+            }}>
             <div className={styles.buttons}>
               <button type="button" onClick={reset}>Full plan <span aria-hidden="true">↗</span></button>
               <div className={styles.zoomControls} role="group" aria-label="Map zoom">
