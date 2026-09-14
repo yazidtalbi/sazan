@@ -60,7 +60,8 @@ elements, palms and pools are enabled only after 1.9× zoom. Imported houses
 replace their selected modular instances; they are not stacked on top of them.
 Static daylight shadows are rendered on demand rather than every frame. Mobile
 uses fewer terrain segments, one-third vegetation density, reduced pixel ratio,
-no shadows or cursor sway, and no automatic 8K download. Desktop high-resolution
+no structural shadow maps or cursor sway, lighter cloud shadows, and no automatic
+8K download. Desktop high-resolution
 loading starts above 2× only when hardware supports 8192 textures and Save-Data
 is not enabled. Its failure retains the 4K texture. GPU memory for an 8K RGBA
 texture is still substantial; this path is intentionally desktop-only.
@@ -68,10 +69,17 @@ texture is still substantial; this path is intentionally desktop-only.
 ## Camera, interaction and fallback
 
 The perspective camera maintains a fixed bearing and zero roll. Overview pitch
-is 58° downward, gently approaching 47° at maximum 5.56× zoom. The entire source
+is 58° downward, smoothly tilting to 34° at maximum 5.56× dolly zoom. FOV smoothly
+narrows from 46° in overview to 32° close up, adding a lens change to the dolly.
+The entire source
 image fits in overview on desktop and portrait. Wheel and pinch update dolly
-distance, preserve the pointer's ground-plane focal point, and ease independently
-of frame rate. Drag, arrow keys, +/−, Home, location selection and Reset view all
+distance, preserve the pointer's ground-plane focal point on every frame even
+as FOV changes, and ease independently of frame rate. Logarithmic distance uses
+a critically damped response at 1.9/s: less than 2% travel in the first 100ms,
+about 95% at 2.5 seconds, and a gentle tail to rest. Repeated wheel events retain
+velocity instead of restarting the ease-in. Both directions, location focus and
+reset share this heavy movement; dragging retains its faster response.
+Drag, arrow keys, +/−, Home, location selection and Reset view all
 use the same camera rig. Restrained mouse sway does not change orientation.
 
 DOM markers and estate paths are projected with the same camera and terrain
@@ -88,11 +96,23 @@ resources and the animation frame are released on route exit. Fetches abort.
 Hidden tabs skip rendering; reduced motion removes sway, water motion and camera
 interpolation while preserving direct navigation.
 
+Three elevated cloud planes reuse `public/masterplan/cloud.webp` and drift on
+235–310 second paths, fading before wrapping beyond the map. Mobile uses two.
+Their alpha silhouettes are projected along the daylight direction onto terrain,
+water in the base image, roofs, buildings and vegetation. Five texture samples
+soften each shadow's edge. Cloud geometry and shadow uniforms share positions
+and heights, so shadows stay attached to the clouds through zoom and tilt.
+No per-frame shadow-map render is needed for this simulated cloud lighting.
+Close zoom lowers cloud opacity to preserve detail. Pause freezes positions;
+reduced motion keeps static clouds and shadows. Loading failure leaves the map
+usable. Cloud geometry/materials and the shared texture are disposed on exit.
+
 ## Rebuild and verification
 
 ```
 npm run assets:masterplan-3d
 npm run test:masterplan-3d:camera
+node --test tests/masterplan-3d-clouds.test.mjs
 npm run build
 # With the site running locally:
 npm run test:masterplan-3d

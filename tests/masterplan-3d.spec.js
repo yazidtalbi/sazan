@@ -20,10 +20,39 @@ test('desktop scene, every destination, keyboard navigation, and reset',async({p
   await expect(scene).toHaveAttribute('data-zoom',/1\.00[0-5]/,{timeout:20000});
   await scene.focus();await page.keyboard.press('+');
   await expect.poll(async()=>Number(await scene.getAttribute('data-zoom'))).toBeGreaterThan(1.15);
+  expect(Number(await scene.getAttribute('data-fov'))).toBeLessThan(46);
+  expect(Number(await scene.getAttribute('data-angle'))).toBeLessThan(58);
   await page.keyboard.press('Home');await expect(scene).toHaveAttribute('data-zoom',/1\.00[0-5]/,{timeout:20000});
+  expect(Number(await scene.getAttribute('data-fov'))).toBeCloseTo(46,1);
   await page.getByRole('link',{name:'Masterplan',exact:true}).click();
-  await expect(page).toHaveURL(/\/masterplan$/);
+  await expect(page).toHaveURL(/\/masterplan$/,{timeout:15000});
   await expect(page.locator('[data-zoom]')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
+test('clouds drift with their shadows, pause, and respect reduced motion',async({page})=>{
+  const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+  await page.goto('/masterplan-3d');
+  const scene=page.getByRole('region',{name:/Interactive island/});
+  await expect(scene).toHaveAttribute('data-cloud-count','3',{timeout:30000});
+  const firstShadow=Number(await scene.getAttribute('data-cloud-shadow-x'));
+  await expect.poll(async()=>Number(await scene.getAttribute('data-cloud-shadow-x')),{timeout:15000}).toBeGreaterThan(firstShadow+.1);
+  await page.getByRole('button',{name:'Pause motion'}).click();
+  await page.waitForTimeout(400);
+  const paused=await scene.getAttribute('data-cloud-time');
+  await page.waitForTimeout(600);await expect(scene).toHaveAttribute('data-cloud-time',paused);
+  await page.getByRole('button',{name:'Resume motion'}).click();
+  await expect.poll(async()=>Number(await scene.getAttribute('data-cloud-time'))).toBeGreaterThan(Number(paused));
+  await page.emulateMedia({reducedMotion:'reduce'});await page.waitForTimeout(400);
+  const reducedTime=await scene.getAttribute('data-cloud-time');
+  await page.waitForTimeout(600);await expect(scene).toHaveAttribute('data-cloud-time',reducedTime);
+  await page.screenshot({path:'test-results/masterplan-clouds.png'});
+  await page.getByRole('combobox',{name:'Explore a location'}).selectOption('3');
+  await page.getByRole('button',{name:'Close location details'}).click();
+  await page.getByRole('button',{name:'Zoom in',exact:true}).click();
+  await page.getByRole('button',{name:'Zoom in',exact:true}).click();
+  await expect.poll(async()=>Number(await scene.getAttribute('data-angle'))).toBeLessThan(37);
+  await page.screenshot({path:'test-results/masterplan-close-tilt.png'});
   expect(errors).toEqual([]);
 });
 
