@@ -1,6 +1,7 @@
 .page { background: #086479; color: #824920; font-family: var(--font-sans); font-weight: 500; }
 .journey { position: relative; height: 240svh; }
 .viewport { position: sticky; top: 0; height: 100svh; overflow: hidden; isolation: isolate; background: #086479; }
+.mapSurface { position: relative; width: 100%; height: 100%; overflow: hidden; isolation: isolate; }
 .canvas, .fallback { position: absolute; inset: 0; width: 100%; height: 100%; }
 .canvas canvas { display: block; width: 100%; height: 100%; }
 .canvas { cursor: grab; touch-action: none; user-select: none; }
@@ -43,18 +44,24 @@
 .progress { position: absolute; z-index: 5; bottom: 0; left: 0; width: 100%; height: 2px; background: #ffffff25; }
 .progress span { display: block; width: 100%; height: 100%; background: #f8efdb; transform: scaleX(0); transform-origin: left; }
 .srOnly { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
-@media (max-width: 760px) {
+@media (max-width: 900px) {
+  .journey { height: 100svh; }
+  .viewport { display: flex; flex-direction: column; }
+  .mapSurface { flex: 1; min-height: 0; height: auto; }
   .page .marker { width: 25px; height: 25px; }
   .marker > span { font-size: 19px; }
   .marker i { display: none; }
-  .controls { padding: 18px 18px 24px; flex-wrap: wrap; gap: 12px; }
-  .buttons { width: 100%; gap: 6px; flex-wrap: wrap; }
+  .controls { position: relative; flex: 0 0 auto; padding: 12px 12px max(12px, env(safe-area-inset-bottom)); flex-wrap: wrap; gap: 8px; background: #fbf8f0; border-top: 1px solid #82492026; }
+  .buttons { width: 100%; gap: 6px; justify-content: space-between; }
   .buttons > button { padding: 10px; font-size: 10px; }
   .buttons span { margin-left: 5px; }
   .controls .zoomControls button { padding: 8px 10px; }
-  .hint { font-size: 9px; max-width: 125px; }
-  .select select { max-width: 200px; font-size: 10px; }
-  .details { top: auto; bottom: 151px; right: 18px; left: 18px; width: auto; max-height: 38svh; padding: 20px; }
+  .hint { display: none; }
+  .select { width: 100%; }
+  .select select { width: 100%; max-width: none; font-size: 16px; border-color: #82492040; }
+  .details { top: auto; bottom: 12px; right: 12px; left: 12px; width: auto; max-height: min(38svh, calc(100% - 80px)); padding: 16px; }
+  .close { top: max(12px, env(safe-area-inset-top)); right: 12px; width: 44px; height: 44px; }
+  .progress { display: none; }
   .details > img { float: left; width: 80px; height: 80px; margin: 0 15px 12px 0; }
   .details h2 { font-size: 26px; padding-right: 20px; }
   .details dl { clear: both; }
@@ -64,19 +71,6 @@
   .marker i { transition: none; }
 }
 
-.focusBlur {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  pointer-events: none;
-  opacity: 0;
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #0009 12%, transparent 32%, transparent 68%, #0009 88%, #000 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #0009 12%, transparent 32%, transparent 68%, #0009 88%, #000 100%);
-}
-.focusBlur.hidden { opacity: 0 !important; }
-
 /* Keep the dimmer above ambient layers and below the selected pin and controls. */
 .zones { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 3; pointer-events: none; opacity: 0; transition: opacity .3s ease; }
 .zoneVisible { opacity: 1; }
@@ -84,7 +78,7 @@
 .page .marker { background: white; color: #824920; }
 .page .marker.active { background: white; color: #824920; box-shadow: 0 0 0 5px #ffffff55; }
 .detailsLeft { right: auto; left: 28px; }
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .detailsLeft { left: 18px; right: 18px; }
 }
 @media (prefers-reduced-motion: reduce) {

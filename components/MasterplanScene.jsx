@@ -8,6 +8,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { sceneLocations as locations } from '@/lib/masterplan3-locations';
 import zones from '@/lib/masterplan3-zones.json';
 import depthGrid from '@/lib/masterplan3-depth.json';
+import { mountFlatMap } from '@/lib/masterplan-flat-map';
 import { waterGlitterShader } from '@/lib/masterplan3-glitter';
 import styles from '@/app/masterplan3/masterplan3.module.css';
 
@@ -85,6 +86,7 @@ export default function MasterplanScene() {
   const zoneCutoutRef = useRef(null);
   const sectionRef = useRef(null);
   const viewportRef = useRef(null);
+  const fallbackRef = useRef(null);
   const canvasHost = useRef(null);
   const markerRefs = useRef([]);
   const progressRef = useRef(null);
@@ -93,11 +95,12 @@ export default function MasterplanScene() {
   const reducedRef = useRef(false);
   const navigationRef = useRef(null);
   const zoomLabelRef = useRef(null);
-  const focusBlurRef = useRef(null);
   const [selected, setSelected] = useState(null);
   const [motion, setMotion] = useState(true);
   const [reduced, setReduced] = useState(false);
   const [ready, setReady] = useState(false);
+  const [flatMode, setFlatMode] = useState(false);
+  const [forceFlat, setForceFlat] = useState(false);
   selectedRef.current = selected;
   motionRef.current = motion && !reduced;
   reducedRef.current = reduced;
@@ -125,9 +128,16 @@ export default function MasterplanScene() {
     if (ready || !viewportRef.current) return;
     const update = () => {
       const { clientWidth: width, clientHeight: height } = viewportRef.current;
-      const mapWidth = Math.max(width, height * ASPECT), mapHeight = mapWidth / ASPECT;
+      const mobile = width <= 900;
+      // Match the initial camera's .8 framing and .88 distance multiplier.
+      const mapWidth = Math.max(width, height * ASPECT) / (mobile ? .704 : 1), mapHeight = mapWidth / ASPECT;
+      const offsetY = (height - mapHeight) / 2 - (mobile ? .07 * mapHeight : 0);
+      Object.assign(fallbackRef.current.style, {
+        width: `${mapWidth}px`, height: `${mapHeight}px`,
+        left: `${(width - mapWidth) / 2}px`, top: `${offsetY}px`,
+      });
       const d = selected === null ? '' : zones[selected].map(polygon => polygon.map(([x, y], i) =>
-        `${i ? 'L' : 'M'}${(width - mapWidth) / 2 + x * mapWidth},${(height - mapHeight) / 2 + y * mapHeight}`
+        `${i ? 'L' : 'M'}${(width - mapWidth) / 2 + x * mapWidth},${offsetY + y * mapHeight}`
       ).join(' ') + 'Z').join(' ');
       zoneSvgRef.current?.setAttribute('viewBox', `0 0 ${width} ${height}`);
       zonePathRef.current?.setAttribute('d', d);
@@ -142,13 +152,26 @@ export default function MasterplanScene() {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
     const host = canvasHost.current, viewport = viewportRef.current;
+    const mobile = window.matchMedia('(max-width: 900px)').matches;
+    const touchDevice = window.matchMedia('(pointer: coarse)').matches;
+    if (forceFlat) {
+      setFlatMode(true);
+      return mountFlatMap({ host, viewport, image: fallbackRef.current,
+        markers: markerRefs, zones, locations, selected: selectedRef,
+        navigation: navigationRef, zoomLabel: zoomLabelRef,
+        zoneSvg: zoneSvgRef, zonePath: zonePathRef, zoneCutout: zoneCutoutRef,
+        onReady: () => setReady(true) });
+    }
+    setFlatMode(false);
+    const overviewY = () => viewport.clientWidth <= 900 ? -.14 : 0;
     let renderer;
     try {
-      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' });
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: !mobile, powerPreference: 'low-power' });
     } catch {
-      return; // The original image and location selector remain usable.
+      setForceFlat(true);
+      return;
     }
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.domElement.setAttribute('aria-hidden', 'true');
     host.appendChild(renderer.domElement);
@@ -160,9 +183,10 @@ export default function MasterplanScene() {
     const textures = [], materials = [], geometries = [];
     let disposed = false, loaded = false, failed = false, width = 1, height = 1, baseDistance = 4;
     const pointer = new THREE.Vector2(), smoothed = new THREE.Vector2();
+    const ambientPointer = new THREE.Vector2(), gestureVelocity = new THREE.Vector2();
     const scroll = { progress: 0 };
-    const state = { zoom: 1, x: 0, y: 0 };
-    const target = { zoom: 1, x: 0, y: 0 };
+    const state = { zoom: 1, x: 0, y: overviewY() };
+    const target = { zoom: 1, x: 0, y: overviewY() };
     const velocity = new THREE.Vector2();
     const touches = new Map();
     let manual = false, lastGesture = null;
@@ -197,7 +221,7 @@ export default function MasterplanScene() {
     };
     navigationRef.current = {
       zoom: factor => zoomAt(factor),
-      reset: () => { takeControl(); Object.assign(target, { zoom: 1, x: 0, y: 0 }); },
+      reset: () => { takeControl(); Object.assign(target, { zoom: 1, x: 0, y: overviewY() }); },
       focus: index => {
         takeControl();
         const [x, y] = locations[index].anchor;
@@ -244,9 +268,12 @@ export default function MasterplanScene() {
     const fail = () => {
       failed = true;
       setReady(false);
+      setForceFlat(true);
       renderer.setAnimationLoop(null);
     };
-    Promise.all([load('/8K.png'), load('/masterplan/island-depth.png'), load('/masterplan/island-water-mask.png')]).then(([image, depth, waterMask]) => {
+    renderer.debug.onShaderError = fail;
+    let detailRequested = !mobile, pendingDetail = null;
+    Promise.all([load(mobile || renderer.capabilities.maxTextureSize < 8058 ? '/masterplan/map-mobile.webp' : '/masterplan/map-desktop.webp'), load('/masterplan/island-depth.png'), load('/masterplan/island-water-mask.png')]).then(([image, depth, waterMask]) => {
       if (disposed) return;
       image.colorSpace = THREE.SRGBColorSpace;
       image.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
@@ -259,14 +286,14 @@ export default function MasterplanScene() {
       waterMask.minFilter = THREE.LinearFilter;
       waterMask.magFilter = THREE.LinearFilter;
       uniforms.uWaterMask.value = waterMask;
-      const geometry = new THREE.PlaneGeometry(ASPECT * 2, 2, 512, 272);
+      const geometry = new THREE.PlaneGeometry(ASPECT * 2, 2, mobile ? 128 : 256, mobile ? 68 : 136);
       const material = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader });
       geometries.push(geometry); materials.push(material);
       group.add(new THREE.Mesh(geometry, material));
       loaded = true;
       setReady(true);
     }).catch(() => { if (!disposed) fail(); });
-    load('/island/cloud-overlay.png').then(texture => {
+    load('/masterplan/cloud.webp').then(texture => {
       if (disposed) return;
       texture.colorSpace = THREE.SRGBColorSpace;
       uniforms.uCloudTexture.value = texture;
@@ -293,13 +320,20 @@ export default function MasterplanScene() {
       renderer.setSize(width, height);
       camera.aspect = width / height;
       // Cover the viewport with a small overscan for the mouse-driven depth.
-      baseDistance = Math.min(1, ASPECT / camera.aspect) / Math.tan(THREE.MathUtils.degToRad(20)) * .95;
+      baseDistance = Math.min(1, ASPECT / camera.aspect) / Math.tan(THREE.MathUtils.degToRad(20)) * (width <= 900 ? .8 : .95);
       camera.updateProjectionMatrix();
       boundTarget();
     };
     const observer = new ResizeObserver(resize);
     observer.observe(viewport);
     resize();
+    const pointAt = (x, y) => {
+      const bounds = viewport.getBoundingClientRect();
+      pointer.set(
+        THREE.MathUtils.clamp((x - bounds.left) / width * 2 - 1, -1, 1),
+        THREE.MathUtils.clamp(1 - (y - bounds.top) / height * 2, -1, 1),
+      );
+    };
     const move = event => {
       if (touches.has(event.pointerId)) {
         event.preventDefault();
@@ -311,24 +345,31 @@ export default function MasterplanScene() {
           time: performance.now() };
         if (lastGesture) {
           if (current.distance && lastGesture.distance) zoomAt(current.distance / lastGesture.distance, current.x, current.y);
-          const units = halfHeight(target.zoom) * 2 / height;
+          // Use the rendered camera distance so the map follows the finger 1:1.
+          const units = halfHeight(target.zoom) * (.88 + smoothed.y * .025) * 2 / height;
           const dx = -(current.x - lastGesture.x) * units;
           const dy = (current.y - lastGesture.y) * units;
           target.x += dx; target.y += dy;
           const seconds = Math.max(.008, (current.time - lastGesture.time) / 1000);
-          velocity.lerp(new THREE.Vector2(dx / seconds, dy / seconds), .35);
+          if (points.length === 1) {
+            gestureVelocity.set(dx / seconds, dy / seconds).clampLength(0, halfHeight(target.zoom) * 4);
+            velocity.lerp(gestureVelocity, .35);
+          } else velocity.set(0, 0);
           boundTarget();
         }
+        // A single finger drives the same perspective input as desktop hover.
+        // Neutralize tilt while pinching so zoom remains easy to control.
+        if (event.pointerType !== 'mouse' && points.length === 1) pointAt(current.x, current.y);
+        else if (points.length > 1) pointer.set(0, 0);
         lastGesture = current;
         return;
       }
       if (event.pointerType !== 'mouse') return;
-      const bounds = viewport.getBoundingClientRect();
-      pointer.set((event.clientX - bounds.left) / width * 2 - 1, 1 - (event.clientY - bounds.top) / height * 2);
+      pointAt(event.clientX, event.clientY);
     };
     const leave = () => pointer.set(0, 0);
     const down = event => {
-      if (event.button !== 0 || !loaded || failed) return;
+      if ((event.pointerType === 'mouse' && event.button !== 0) || !loaded || failed) return;
       event.preventDefault();
       takeControl();
       touches.set(event.pointerId, { x: event.clientX, y: event.clientY });
@@ -339,14 +380,20 @@ export default function MasterplanScene() {
         time: performance.now() };
       host.setPointerCapture(event.pointerId);
       host.classList.add(styles.dragging);
-      pointer.set(0, 0);
+      if (event.pointerType !== 'mouse' && points.length === 1) pointAt(event.clientX, event.clientY);
+      else pointer.set(0, 0);
     };
     const up = event => {
       if (!touches.has(event.pointerId)) return;
+      const wasPinching = touches.size > 1;
       touches.delete(event.pointerId);
-      if (event.type !== 'pointerup' || performance.now() - (lastGesture?.time ?? 0) > 100 || reducedRef.current) velocity.set(0, 0);
+      if (wasPinching || event.type !== 'pointerup' || performance.now() - (lastGesture?.time ?? 0) > 100 || reducedRef.current) velocity.set(0, 0);
       const remaining = [...touches.values()][0];
       lastGesture = remaining ? { ...remaining, distance: 0, time: performance.now() } : null;
+      if (event.pointerType !== 'mouse') {
+        if (remaining) pointAt(remaining.x, remaining.y);
+        else pointer.set(0, 0);
+      }
       if (!touches.size) host.classList.remove(styles.dragging);
       if (host.hasPointerCapture(event.pointerId)) host.releasePointerCapture(event.pointerId);
     };
@@ -390,7 +437,13 @@ export default function MasterplanScene() {
       const enabled = motionRef.current;
       if (enabled) elapsed += dt;
       const blend = reducedRef.current ? 1 : 1 - Math.exp(-dt * (touches.size ? 18 : 8));
-      smoothed.lerp(enabled ? pointer : new THREE.Vector2(), blend);
+      // Touch position drives perspective during a drag; ease back on release.
+      ambientPointer.set(0, 0);
+      if (enabled) {
+        if (touchDevice && !touches.size) ambientPointer.set(Math.sin(elapsed * .2) * .035, Math.sin(elapsed * .15) * .045);
+        else ambientPointer.copy(pointer);
+      }
+      smoothed.lerp(ambientPointer, blend);
       const active = selectedRef.current;
       const destination = active === null ? [.64, .64] : locations[active].anchor;
       const progress = enabled ? scroll.progress : 0;
@@ -408,12 +461,13 @@ export default function MasterplanScene() {
       } else {
         target.zoom = 1 + amount * .30;
         target.x = (destination[0] - .5) * ASPECT * 2 * amount * .33;
-        target.y = (.5 - destination[1]) * 2 * amount * .33;
+        target.y = overviewY() + (.5 - destination[1]) * 2 * amount * .33;
       }
       boundTarget();
       // Ease zoom and its focal-point movement together, independently of mouse perspective.
-      const zoomBlend = reducedRef.current ? 1 : 1 - Math.exp(-dt * 3);
-      const cameraBlend = Math.abs(target.zoom - state.zoom) > .0001 && touches.size !== 1 ? zoomBlend : blend;
+      // Follow active gestures immediately; ease button zoom and release inertia.
+      const zoomBlend = reducedRef.current || touches.size ? 1 : 1 - Math.exp(-dt * 3);
+      const cameraBlend = touches.size ? 1 : Math.abs(target.zoom - state.zoom) > .0001 ? zoomBlend : blend;
       state.zoom = THREE.MathUtils.lerp(state.zoom, target.zoom, zoomBlend);
       state.x = THREE.MathUtils.lerp(state.x, target.x, cameraBlend);
       state.y = THREE.MathUtils.lerp(state.y, target.y, cameraBlend);
@@ -425,8 +479,19 @@ export default function MasterplanScene() {
       state.x = THREE.MathUtils.clamp(state.x, -limitX, limitX);
       state.y = THREE.MathUtils.clamp(state.y, -limitY, limitY);
       if (zoomLabelRef.current) zoomLabelRef.current.textContent = `${Math.round(state.zoom * 100)}%`;
-      if (focusBlurRef.current) {
-        focusBlurRef.current.style.opacity = String(THREE.MathUtils.smoothstep(state.zoom, 1, 2.6));
+      const idle = !touches.size && velocity.lengthSq() < .001;
+      if (pendingDetail && idle) {
+        uniforms.uImage.value = pendingDetail;
+        pendingDetail = null;
+      }
+      if (idle && state.zoom > 1.4 && !detailRequested && renderer.capabilities.maxTextureSize >= 8058) {
+        detailRequested = true;
+        load('/masterplan/map-desktop.webp').then(texture => {
+          if (disposed) return;
+          texture.colorSpace = THREE.SRGBColorSpace;
+          texture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+          pendingDetail = texture;
+        }).catch(() => {}); // Keep the 4K map if the detail download fails.
       }
       const drift = enabled ? Math.sin(elapsed * .13) * .002 : 0;
       // Stronger lateral depth, plus a vertical orbit for near/far perspective.
@@ -509,7 +574,7 @@ export default function MasterplanScene() {
           (.5 - y - uniforms.uPointer.value.y * depth) * 2, depth * uniforms.uRelief.value).project(camera);
         const px = (projected.x + 1) * width / 2, py = (1 - projected.y) * height / 2;
         marker.style.transform = `translate3d(${px}px, ${py}px, 0) translate(-50%, -50%)`;
-        const visible = (active === null || active === i) && px > 20 && px < width - 20 && py > 90 && py < height - 90;
+        const visible = (active === null || active === i) && px > 20 && px < width - 20 && py > 24 && py < height - (width <= 900 ? 24 : 90);
         marker.style.visibility = visible ? 'visible' : 'hidden';
         marker.tabIndex = visible ? 0 : -1;
       });
@@ -542,7 +607,7 @@ export default function MasterplanScene() {
       geometries.forEach(geometry => geometry.dispose());
       renderer.dispose(); renderer.domElement.remove();
     };
-  }, []);
+  }, [forceFlat]);
 
   const reset = () => {
     setSelected(null);
@@ -557,18 +622,18 @@ export default function MasterplanScene() {
   return <>
     <main id="main-content" className={`${styles.page} ${ivyMode.variable} ${gilroy.variable}`}>
       <section ref={sectionRef} className={styles.journey} aria-label="Interactive Sazan masterplan">
-        <div ref={viewportRef} className={styles.viewport}>
-          <img className={`${styles.fallback} ${ready ? styles.hidden : ''}`} src="/8K.png" alt="Sazan masterplan showing the coastline, lagoon, residences, hotels and marina" />
+        <div className={styles.viewport}>
+          <div ref={viewportRef} className={styles.mapSurface}>
+          <img ref={fallbackRef} className={`${styles.fallback} ${ready && !flatMode ? styles.hidden : ''}`} src="/masterplan/map-preview.webp" fetchPriority="high" decoding="async" alt="Sazan masterplan showing the coastline, lagoon, residences, hotels and marina" />
           <div ref={canvasHost} className={`${styles.canvas} ${ready ? '' : styles.hidden}`} data-lenis-prevent
             tabIndex={ready ? 0 : -1} role="region" aria-label="Map. Drag to pan, scroll or pinch to zoom. Arrow keys pan, plus and minus zoom, Home resets." />
-          {ready && motion && !reduced && <div className={`masterplan-passing-bird ${styles.bird}`} aria-hidden="true">
+          {ready && !flatMode && motion && !reduced && <div className={`masterplan-passing-bird ${styles.bird}`} aria-hidden="true">
             <svg viewBox="0 0 80 40" focusable="false">
               <path className="bird-wing bird-wing-left" d="M40 25C29 9 15 8 2 12C18 12 28 22 40 28Z" />
               <path className="bird-wing bird-wing-right" d="M40 25C51 9 65 8 78 12C62 12 52 22 40 28Z" />
               <path d="M38 23Q40 19 42 23L43 31L40 29L37 31Z" />
             </svg>
           </div>}
-          <div ref={focusBlurRef} className={`${styles.focusBlur} ${ready ? '' : styles.hidden}`} aria-hidden="true" />
           <svg ref={zoneSvgRef} className={`${styles.zones} ${location ? styles.zoneVisible : ''}`} aria-hidden="true">
             <defs>
               <filter id={`${maskId}-soft`} x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
@@ -596,6 +661,7 @@ export default function MasterplanScene() {
             <h2>{location.name}</h2>
             <dl>{location.stats.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
           </aside>}
+          </div>
           <footer className={styles.controls}>
             <div className={styles.buttons}>
               <button type="button" onClick={reset}>Full plan <span aria-hidden="true">↗</span></button>
@@ -604,7 +670,7 @@ export default function MasterplanScene() {
                 <output ref={zoomLabelRef} aria-label="Map zoom level">100%</output>
                 <button type="button" disabled={!ready} aria-label="Zoom in" onClick={() => navigationRef.current?.zoom(1.25)}>+</button>
               </div>
-              <button type="button" aria-pressed={motion && !reduced} disabled={reduced || !ready} onClick={() => setMotion(!motion)}>{motion && !reduced ? 'Pause motion' : 'Motion off'}</button>
+              <button type="button" aria-pressed={motion && !reduced && !flatMode} disabled={reduced || !ready || flatMode} onClick={() => setMotion(!motion)}>{motion && !reduced && !flatMode ? 'Pause motion' : 'Motion off'}</button>
             </div>
             <label className={styles.select}><span className={styles.srOnly}>Explore a location</span><select value={selected ?? ''} onChange={event => selectLocation(event.target.value === '' ? null : Number(event.target.value))}>
               <option value="">Explore a location</option>{locations.map((item, index) => <option key={item.name} value={index}>{item.name}</option>)}
